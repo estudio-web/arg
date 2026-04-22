@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Control Interno – IN-STORE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --yellow:#ffe600;--blue:#3483fa;--blue-dk:#2968c8;
+  --green:#00a650;--green-dk:#007a3d;--red:#e83030;--red-dk:#b71c1c;
+  --orange:#f97316;--purple:#7c3aed;
+  --text:#333;--sub:#666;--border:#e0e0e0;--bg:#ededed;--white:#fff;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.12),0 1px 6px rgba(0,0,0,.08);
+  --shadow-md:0 4px 16px rgba(0,0,0,.14);
+  --radius:8px;--radius-lg:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+.header{position:sticky;top:0;background:var(--yellow);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;z-index:100;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.header-brand{font-size:1rem;font-weight:900;display:flex;align-items:center;gap:6px}
+.btn-back{display:flex;align-items:center;gap:5px;border:none;background:rgba(0,0,0,.1);border-radius:var(--radius);padding:7px 12px;font-family:inherit;font-size:.8rem;font-weight:800;cursor:pointer;color:var(--text);transition:background .15s}
+.btn-back:hover{background:rgba(0,0,0,.18)}
+.btn-back svg{width:15px;height:15px;fill:currentColor}
+
+.main{max-width:1100px;margin:0 auto;padding:14px 12px 60px}
+
+/* GLOBAL MARGIN CARD */
+.global-card{background:var(--white);border-radius:var(--radius-lg);padding:16px;box-shadow:var(--shadow-sm);margin-bottom:14px}
+.global-card h3{font-size:.9rem;font-weight:900;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.margin-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.mg-field{display:flex;flex-direction:column;gap:4px;min-width:120px}
+.mg-field label{font-size:.72rem;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:.4px}
+.mg-field input{padding:8px 11px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.9rem;width:100%;outline:none;transition:border-color .15s}
+.mg-field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(52,131,250,.15)}
+.btn-apply{padding:8px 18px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius);font-family:inherit;font-size:.85rem;font-weight:800;cursor:pointer;white-space:nowrap;transition:background .15s,transform .1s;align-self:flex-end}
+.btn-apply:hover{background:var(--blue-dk)}
+.btn-apply:active{transform:scale(.96)}
+
+/* SUMMARY STATS */
+.summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
+@media(min-width:600px){.summary-grid{grid-template-columns:repeat(4,1fr)}}
+.summary-card{background:var(--white);border-radius:var(--radius-lg);padding:14px;box-shadow:var(--shadow-sm);text-align:center}
+.summary-val{font-size:1.5rem;font-weight:900;line-height:1}
+.summary-label{font-size:.72rem;color:var(--sub);font-weight:700;margin-top:4px}
+
+/* SEARCH + FILTER */
+.controls{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.search-wrap{flex:1;position:relative;min-width:160px}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:16px;height:16px;fill:#999;pointer-events:none}
+.search-input{width:100%;padding:10px 12px 10px 34px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.88rem;background:var(--white);outline:none}
+.search-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(52,131,250,.15)}
+.filter-sel{padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.85rem;background:var(--white);outline:none;color:var(--text)}
+
+/* TABLE */
+.table-wrap{background:var(--white);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm)}
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+thead{background:#fafafa;border-bottom:2px solid var(--border)}
+th{padding:11px 12px;text-align:left;font-size:.72rem;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafeff}
+.td-thumb{width:40px;height:40px;border-radius:8px;object-fit:cover;background:var(--bg)}
+.td-title{font-weight:700;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.td-price{font-weight:800;white-space:nowrap}
+.td-cost{font-size:.8rem;color:var(--sub);white-space:nowrap}
+.td-margin-positive{color:var(--green);font-weight:800}
+.td-margin-negative{color:var(--red);font-weight:800}
+
+/* INLINE INPUTS */
+.inline-input{padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:.82rem;width:80px;outline:none;transition:border-color .15s}
+.inline-input:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(52,131,250,.15)}
+.inline-input.wide{width:110px}
+.inline-note{padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:.78rem;width:140px;outline:none;resize:none;height:36px}
+.inline-note:focus{border-color:var(--blue)}
+
+/* BADGES */
+.badge{display:inline-block;font-size:.65rem;font-weight:800;padding:2px 8px;border-radius:999px}
+.badge-sold{background:#d4edda;color:#155724}
+.badge-unsold{background:#f5f5f5;color:#666}
+.badge-active{background:#e6f9ef;color:var(--green)}
+.badge-inactive{background:#fef2f2;color:var(--red)}
+
+/* TOGGLE */
+.toggle{position:relative;width:34px;height:18px;flex-shrink:0;display:inline-block}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-slider{position:absolute;inset:0;background:#ccc;border-radius:18px;transition:background .2s;cursor:pointer}
+.toggle-slider:before{content:"";position:absolute;width:14px;height:14px;left:2px;bottom:2px;background:#fff;border-radius:50%;transition:transform .2s}
+.toggle input:checked + .toggle-slider{background:var(--green)}
+.toggle input:checked + .toggle-slider:before{transform:translateX(16px)}
+
+.btn-mark-sold{padding:5px 10px;background:var(--green);color:#fff;border:none;border-radius:6px;font-family:inherit;font-size:.75rem;font-weight:800;cursor:pointer;white-space:nowrap;transition:background .15s}
+.btn-mark-sold:hover{background:var(--green-dk)}
+.btn-mark-sold.sold{background:#ccc;cursor:default}
+
+.btn-save-row{padding:5px 10px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-family:inherit;font-size:.75rem;font-weight:800;cursor:pointer;white-space:nowrap;transition:background .15s}
+.btn-save-row:hover{background:var(--blue-dk)}
+
+.empty{text-align:center;padding:50px 16px;color:var(--sub)}
+.empty-icon{font-size:2.8rem;margin-bottom:10px}
+.loading{text-align:center;padding:50px 16px;color:var(--sub)}
+.spinner{width:36px;height:36px;border:4px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* CONFIRM */
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:300;padding:20px}
+.confirm-overlay.open{display:flex}
+.confirm-box{background:var(--white);border-radius:18px;padding:22px 18px 18px;width:100%;max-width:320px;text-align:center;box-shadow:var(--shadow-md)}
+.confirm-icon{font-size:2.2rem;margin-bottom:8px}
+.confirm-box h3{font-size:.95rem;font-weight:900;margin-bottom:5px}
+.confirm-box p{font-size:.82rem;color:var(--sub);margin-bottom:16px}
+.confirm-btns{display:flex;gap:8px}
+.confirm-cancel,.confirm-ok{flex:1;padding:11px;border:none;border-radius:var(--radius);font-family:inherit;font-weight:800;cursor:pointer}
+.confirm-cancel{background:var(--bg)}
+.confirm-ok{background:var(--green);color:#fff}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#222;color:#fff;font-size:.83rem;font-weight:700;padding:9px 18px;border-radius:999px;z-index:2000;opacity:0;transition:opacity .25s,transform .25s;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#ccc;border-radius:2px}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-brand"><span>📊</span> Control Interno</div>
+  <button class="btn-back" id="btnBack">
+    <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    Admin
+  </button>
+</header>
+
+<main class="main">
+
+  <!-- GLOBAL MARGIN -->
+  <div class="global-card">
+    <h3>📈 Aplicar % ganancia global</h3>
+    <div class="margin-row">
+      <div class="mg-field">
+        <label>Costo base (opcional)</label>
+        <input id="globalCost" type="number" placeholder="Ej: 1000" min="0" />
+      </div>
+      <div class="mg-field">
+        <label>% Ganancia global</label>
+        <input id="globalMargin" type="number" placeholder="Ej: 40" min="0" max="999" />
+      </div>
+      <button class="btn-apply" id="btnApplyGlobal">Calcular y ver</button>
+      <button class="btn-apply" style="background:var(--orange)" id="btnApplyAll">Aplicar a todos</button>
+    </div>
+    <div style="font-size:.78rem;color:var(--sub);margin-top:8px" id="globalPreview"></div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="summary-grid" id="summaryGrid"></div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24"><path d="M10 2a8 8 0 105.293 14.121l4.293 4.293 1.414-1.414-4.293-4.293A8 8 0 0010 2zm0 2a6 6 0 110 12A6 6 0 0110 4z"/></svg>
+      <input type="text" id="searchInput" class="search-input" placeholder="Buscar producto..." autocomplete="off" />
+    </div>
+    <select id="filterSold" class="filter-sel">
+      <option value="all">Todos</option>
+      <option value="sold">Vendidos</option>
+      <option value="unsold">Sin vender</option>
+    </select>
+    <select id="filterActive" class="filter-sel">
+      <option value="all">Activos e inactivos</option>
+      <option value="active">Solo activos</option>
+      <option value="inactive">Solo inactivos</option>
+    </select>
+  </div>
+
+  <div id="loadingState" class="loading"><div class="spinner"></div>Cargando datos…</div>
+
+  <div class="table-wrap" id="tableWrap" style="display:none">
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Img</th>
+            <th>Producto</th>
+            <th>Precio venta</th>
+            <th>Costo</th>
+            <th>% Margen</th>
+            <th>Ganancia</th>
+            <th>Stock</th>
+            <th>Vendido</th>
+            <th>Ganancias acum.</th>
+            <th>Notas</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="emptyState" class="empty" style="display:none">
+    <div class="empty-icon">📦</div>
+    <p>No hay productos para mostrar.</p>
+  </div>
+</main>
+
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">💸</div>
+    <h3 id="confirmTitle">¿Aplicar a todos?</h3>
+    <p id="confirmText">Esto actualizará el % de ganancia en todos los productos.</p>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" id="confirmCancel">Cancelar</button>
+      <button class="confirm-ok" id="confirmOk">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, collection, doc, updateDoc, onSnapshot, getDoc, serverTimestamp, writeBatch
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  getAuth, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { firebaseConfig, APP_CONFIG, PLANS } from "./firebase-config.js";
+
+const app  = initializeApp(firebaseConfig);
+const db   = getFirestore(app);
+const auth = getAuth(app);
+
+const params   = new URLSearchParams(location.search);
+let tenantId   = params.get("t");
+let products   = [];
+let tenantConfig = {};
+let confirmCb  = null;
+const $ = id => document.getElementById(id);
+
+/* ── Auth ── */
+onAuthStateChanged(auth, async user => {
+  if (!user) { window.location.href = "admin.html"; return; }
+  if (!tenantId) {
+    try {
+      const snap = await getDoc(doc(db, `users/${user.uid}`));
+      tenantId = snap.exists() ? snap.data().tenantId : user.uid;
+    } catch { tenantId = user.uid; }
+  }
+  loadConfig();
+  startListener();
+});
+
+async function loadConfig() {
+  try {
+    const snap = await getDoc(doc(db, `tenants/${tenantId}/settings/config`));
+    if (snap.exists()) tenantConfig = snap.data();
+  } catch {}
+  try {
+    const planSnap = await getDoc(doc(db, `tenants/${tenantId}/settings/plan`));
+    if (planSnap.exists() && planSnap.data().status === "suspended") {
+      document.querySelector("main").innerHTML = `<div style="text-align:center;padding:60px 16px;color:#666"><div style="font-size:2.5rem">⛔</div><h2 style="margin:10px 0 6px">Cuenta suspendida</h2><p>Contactá al soporte para renovar tu plan.</p></div>`;
+    }
+  } catch {}
+}
+
+$("btnBack").onclick = () => { window.location.href = `admin.html`; };
+
+/* ── Listener ── */
+function startListener() {
+  onSnapshot(collection(db, `tenants/${tenantId}/products`), snap => {
+    products = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    $("loadingState").style.display = "none";
+    renderSummary();
+    renderTable();
+  });
+}
+
+/* ── Global margin ── */
+$("globalMargin").oninput = $("globalCost").oninput = () => {
+  const cost   = parseFloat($("globalCost").value)   || 0;
+  const margin = parseFloat($("globalMargin").value) || 0;
+  if (!cost || !margin) { $("globalPreview").textContent = ""; return; }
+  const final = cost * (1 + margin / 100);
+  $("globalPreview").textContent = `Con costo $${cost.toLocaleString()} y ${margin}% ganancia → Precio final: $${final.toLocaleString("es-AR", {maximumFractionDigits:0})} | Ganancia por unidad: $${(final - cost).toLocaleString("es-AR", {maximumFractionDigits:0})}`;
+};
+
+$("btnApplyGlobal").onclick = () => {
+  const margin = parseFloat($("globalMargin").value);
+  if (!margin) { showToast("Ingresá un porcentaje primero"); return; }
+  renderTable(); // Just recalculates display
+  showToast("Previsualización aplicada");
+};
+
+$("btnApplyAll").onclick = () => {
+  const margin = parseFloat($("globalMargin").value);
+  if (!margin) { showToast("Ingresá un porcentaje primero"); return; }
+  openConfirm(
+    "¿Aplicar a todos los productos?",
+    `Se guardará ${margin}% de ganancia en todos los productos.`,
+    async () => {
+      const batch = writeBatch(db);
+      products.forEach(p => {
+        batch.update(doc(db, `tenants/${tenantId}/products`, p.id), { marginPct: margin });
+      });
+      await batch.commit();
+      showToast(`✓ ${margin}% aplicado a ${products.length} productos`);
+    }
+  );
+};
+
+/* ── Summary ── */
+function renderSummary() {
+  const currency = tenantConfig.currencySymbol || APP_CONFIG.currencySymbol;
+  const totalProducts = products.length;
+  const totalStock    = products.reduce((a, p) => a + (p.stock || 0), 0);
+  const soldProducts  = products.filter(p => p.sold).length;
+  const totalGain     = products.reduce((a, p) => a + (p.accumulatedGain || 0), 0);
+
+  $("summaryGrid").innerHTML = `
+    <div class="summary-card"><div class="summary-val">${totalProducts}</div><div class="summary-label">Productos</div></div>
+    <div class="summary-card"><div class="summary-val" style="color:var(--blue)">${totalStock}</div><div class="summary-label">Stock total</div></div>
+    <div class="summary-card"><div class="summary-val" style="color:var(--orange)">${soldProducts}</div><div class="summary-label">Vendidos</div></div>
+    <div class="summary-card"><div class="summary-val" style="color:var(--green)">${currency}${totalGain.toLocaleString("es-AR",{maximumFractionDigits:0})}</div><div class="summary-label">Ganancias acum.</div></div>
+  `;
+}
+
+/* ── Table ── */
+function renderTable() {
+  const q         = $("searchInput").value.toLowerCase().trim();
+  const fSold     = $("filterSold").value;
+  const fActive   = $("filterActive").value;
+  const globalMg  = parseFloat($("globalMargin").value) || null;
+  const currency  = tenantConfig.currencySymbol || APP_CONFIG.currencySymbol;
+
+  let list = products.filter(p => {
+    if (q && !(p.title || "").toLowerCase().includes(q)) return false;
+    if (fSold === "sold"   && !p.sold)  return false;
+    if (fSold === "unsold" &&  p.sold)  return false;
+    if (fActive === "active"   && !p.active)  return false;
+    if (fActive === "inactive" &&  p.active)  return false;
+    return true;
+  });
+
+  const tbody = $("tableBody");
+  tbody.innerHTML = "";
+
+  if (!list.length) {
+    $("tableWrap").style.display = "none";
+    $("emptyState").style.display = "block";
+    return;
+  }
+
+  $("emptyState").style.display = "none";
+  $("tableWrap").style.display = "block";
+
+  list.forEach(p => {
+    const margin       = p.marginPct || globalMg || 0;
+    const salePrice    = parseFloat((p.promoPrice || p.price || "0").toString().replace(/[^0-9.,]/g, "").replace(",", ".")) || 0;
+    const costEstimate = margin > 0 ? salePrice / (1 + margin / 100) : (p.costPrice || 0);
+    const gain         = salePrice - costEstimate;
+    const marginReal   = costEstimate > 0 ? ((gain / costEstimate) * 100) : 0;
+    const isPositive   = gain >= 0;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><img class="td-thumb" src="${esc(p.imageUrl || placeholder(p.title))}" alt="" onerror="this.src='${placeholder()}'"></td>
+      <td><div class="td-title" title="${esc(p.title)}">${esc(p.title || "Sin título")}</div></td>
+      <td><div class="td-price">${currency}${salePrice.toLocaleString()}</div></td>
+      <td>
+        <input class="inline-input cost-input" data-id="${p.id}" type="number" min="0"
+               value="${p.costPrice || (costEstimate ? Math.round(costEstimate) : "")}"
+               placeholder="Costo..." />
+      </td>
+      <td>
+        <input class="inline-input margin-input" data-id="${p.id}" type="number" min="0" max="999"
+               value="${p.marginPct || ""}"
+               placeholder="${globalMg ? globalMg + "%" : "%" }" />
+      </td>
+      <td class="${isPositive ? "td-margin-positive" : "td-margin-negative"}">
+        ${gain !== 0 ? currency + Math.round(gain).toLocaleString() : "—"}
+      </td>
+      <td>
+        <input class="inline-input stock-input" data-id="${p.id}" type="number" min="0"
+               value="${p.stock !== null && p.stock !== undefined ? p.stock : ""}"
+               placeholder="0" />
+      </td>
+      <td>
+        <button class="btn-mark-sold${p.sold ? " sold" : ""}" data-id="${p.id}" data-sold="${p.sold ? "1" : "0"}">
+          ${p.sold ? "✓ Vendido" : "Marcar"}
+        </button>
+      </td>
+      <td>
+        <input class="inline-input wide accum-input" data-id="${p.id}" type="number" min="0"
+               value="${p.accumulatedGain || ""}"
+               placeholder="0" />
+      </td>
+      <td>
+        <textarea class="inline-note note-input" data-id="${p.id}" placeholder="Notas...">${p.notes || ""}</textarea>
+      </td>
+      <td><span class="badge ${p.active ? "badge-active" : "badge-inactive"}">${p.active ? "Activo" : "Inactivo"}</span></td>
+      <td>
+        <button class="btn-save-row" data-id="${p.id}">💾 Guardar</button>
+      </td>`;
+
+    /* ── Mark sold ── */
+    tr.querySelector(".btn-mark-sold").onclick = async e => {
+      const id  = e.target.dataset.id;
+      const cur = e.target.dataset.sold === "1";
+      e.target.disabled = true;
+      await updateDoc(doc(db, `tenants/${tenantId}/products`, id), {
+        sold: !cur, updatedAt: serverTimestamp()
+      });
+      showToast(cur ? "Marcado como no vendido" : "Marcado como vendido ✓");
+    };
+
+    /* ── Save row ── */
+    tr.querySelector(".btn-save-row").onclick = async e => {
+      const id      = e.target.dataset.id;
+      const row     = e.target.closest("tr");
+      const costVal = parseFloat(row.querySelector(".cost-input").value)   || null;
+      const mgVal   = parseFloat(row.querySelector(".margin-input").value) || null;
+      const stVal   = row.querySelector(".stock-input").value !== "" ? parseInt(row.querySelector(".stock-input").value) : null;
+      const accumVal= parseFloat(row.querySelector(".accum-input").value)  || null;
+      const noteVal = row.querySelector(".note-input").value.trim();
+
+      const updates = { updatedAt: serverTimestamp() };
+      if (costVal  !== null) updates.costPrice       = costVal;
+      if (mgVal    !== null) updates.marginPct        = mgVal;
+      if (stVal    !== null) updates.stock            = stVal;
+      if (accumVal !== null) updates.accumulatedGain  = accumVal;
+      updates.notes = noteVal;
+
+      e.target.disabled = true; e.target.textContent = "Guardando…";
+      try {
+        await updateDoc(doc(db, `tenants/${tenantId}/products`, id), updates);
+        showToast("Guardado ✓");
+      } catch { showToast("Error al guardar"); }
+      finally { e.target.disabled = false; e.target.textContent = "💾 Guardar"; }
+    };
+
+    tbody.appendChild(tr);
+  });
+}
+
+[$("searchInput"), $("filterSold"), $("filterActive")].forEach(el => el.addEventListener("input", () => { renderSummary(); renderTable(); }));
+
+/* ── Confirm ── */
+function openConfirm(title, text, cb) {
+  $("confirmTitle").textContent = title; $("confirmText").textContent = text; confirmCb = cb;
+  $("confirmOverlay").classList.add("open");
+}
+$("confirmCancel").onclick = () => $("confirmOverlay").classList.remove("open");
+$("confirmOk").onclick = async () => {
+  $("confirmOverlay").classList.remove("open");
+  if (confirmCb) await confirmCb(); confirmCb = null;
+};
+
+/* ── Helpers ── */
+function esc(t = "") { const d = document.createElement("div"); d.textContent = String(t); return d.innerHTML; }
+function placeholder(t = "") { return `https://via.placeholder.com/80x80/f5f5f5/999?text=${encodeURIComponent(t || "IMG")}`; }
+function showToast(msg) { const t = $("toast"); t.textContent = msg; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 2200); }
+</script>
+</body>
+</html>

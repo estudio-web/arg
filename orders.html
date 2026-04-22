@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Pedidos – NV-STORE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --yellow:#ffe600;--blue:#3483fa;--blue-dk:#2968c8;
+  --green:#00a650;--green-dk:#007a3d;--red:#e83030;--red-dk:#b71c1c;
+  --orange:#f97316;--purple:#7c3aed;
+  --text:#333;--sub:#666;--border:#e0e0e0;--bg:#ededed;--white:#fff;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.12),0 1px 6px rgba(0,0,0,.08);
+  --shadow-md:0 4px 16px rgba(0,0,0,.14);
+  --radius:8px;--radius-lg:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+.header{position:sticky;top:0;background:var(--yellow);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;z-index:100;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.header-brand{font-size:1.05rem;font-weight:900;display:flex;align-items:center;gap:6px}
+.btn-back{display:flex;align-items:center;gap:5px;border:none;background:rgba(0,0,0,.1);border-radius:var(--radius);padding:7px 12px;font-family:inherit;font-size:.82rem;font-weight:800;cursor:pointer;color:var(--text);transition:background .15s}
+.btn-back:hover{background:rgba(0,0,0,.18)}
+.btn-back svg{width:16px;height:16px;fill:currentColor}
+
+/* FILTER TABS */
+.filter-bar{display:flex;gap:6px;padding:12px 12px 0;overflow-x:auto;scrollbar-width:none;max-width:900px;margin:0 auto}
+.filter-bar::-webkit-scrollbar{display:none}
+.filter-chip{padding:7px 16px;border-radius:999px;border:none;background:var(--white);color:var(--sub);font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:var(--shadow-sm);transition:background .15s,color .15s;flex-shrink:0}
+.filter-chip.active{background:var(--blue);color:#fff}
+
+.main{max-width:900px;margin:0 auto;padding:12px 12px 80px}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
+@media(min-width:600px){.stats-grid{grid-template-columns:repeat(4,1fr)}}
+.stat-card{background:var(--white);border-radius:var(--radius-lg);padding:14px;box-shadow:var(--shadow-sm);text-align:center}
+.stat-val{font-size:1.6rem;font-weight:900;line-height:1}
+.stat-label{font-size:.75rem;color:var(--sub);font-weight:700;margin-top:4px}
+
+/* ORDER LIST */
+.order-list{display:grid;gap:10px}
+
+.order-card{background:var(--white);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);border:1.5px solid transparent;transition:border-color .15s,box-shadow .15s}
+.order-card:hover{border-color:var(--blue);box-shadow:var(--shadow-md)}
+
+.order-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;gap:10px}
+.order-id{font-size:.78rem;font-weight:700;color:var(--sub)}
+.order-time{font-size:.75rem;color:#aaa;margin-top:2px}
+.order-total{font-size:1.1rem;font-weight:900}
+.order-status{display:inline-flex;align-items:center;gap:4px;font-size:.7rem;font-weight:800;padding:4px 10px;border-radius:999px;flex-shrink:0;text-transform:capitalize}
+.status-pendiente{background:#fff3cd;color:#856404}
+.status-confirmado{background:#d4edda;color:#155724}
+.status-entregado{background:#cce5ff;color:#004085}
+.status-cancelado{background:#f8d7da;color:#721c24}
+
+.order-body{display:none;padding:0 14px 14px;border-top:1px solid var(--border)}
+.order-body.open{display:block}
+
+.order-items{margin-bottom:12px}
+.order-item-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)}
+.order-item-row:last-child{border-bottom:none}
+.order-item-thumb{width:40px;height:40px;border-radius:6px;object-fit:cover;background:var(--bg);flex-shrink:0}
+.order-item-info{flex:1}
+.order-item-title{font-size:.83rem;font-weight:700}
+.order-item-sub{font-size:.75rem;color:var(--sub)}
+
+.order-total-row{display:flex;justify-content:space-between;align-items:center;font-weight:900;font-size:.95rem;margin-bottom:12px;padding-top:4px}
+
+.status-select{padding:7px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.83rem;font-weight:700;color:var(--text);background:var(--white);outline:none;cursor:pointer;transition:border-color .15s}
+.status-select:focus{border-color:var(--blue)}
+
+.order-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn-wa-order{display:flex;align-items:center;gap:6px;padding:9px 14px;background:var(--green);color:#fff;border:none;border-radius:var(--radius);font-family:inherit;font-size:.82rem;font-weight:800;cursor:pointer;text-decoration:none;transition:background .15s}
+.btn-wa-order:hover{background:var(--green-dk)}
+.btn-wa-order svg{width:16px;height:16px;fill:#fff}
+.btn-del-order{padding:9px 14px;background:#fef2f2;color:var(--red);border:1px solid #fecaca;border-radius:var(--radius);font-family:inherit;font-size:.82rem;font-weight:800;cursor:pointer;transition:background .15s}
+.btn-del-order:hover{background:#fee2e2}
+
+.empty{text-align:center;padding:60px 16px;color:var(--sub)}
+.empty-icon{font-size:3rem;margin-bottom:12px}
+.loading{text-align:center;padding:60px 16px;color:var(--sub)}
+.spinner{width:38px;height:38px;border:4px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* CONFIRM */
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:300;padding:20px}
+.confirm-overlay.open{display:flex}
+.confirm-box{background:var(--white);border-radius:18px;padding:22px 18px 18px;width:100%;max-width:320px;text-align:center;box-shadow:var(--shadow-md)}
+.confirm-icon{font-size:2.2rem;margin-bottom:8px}
+.confirm-box h3{font-size:.95rem;font-weight:900;margin-bottom:5px}
+.confirm-box p{font-size:.82rem;color:var(--sub);margin-bottom:16px}
+.confirm-btns{display:flex;gap:8px}
+.confirm-cancel{flex:1;padding:11px;background:var(--bg);border:none;border-radius:var(--radius);font-family:inherit;font-weight:700;cursor:pointer}
+.confirm-ok{flex:1;padding:11px;background:var(--red);color:#fff;border:none;border-radius:var(--radius);font-family:inherit;font-weight:800;cursor:pointer}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#222;color:#fff;font-size:.83rem;font-weight:700;padding:9px 18px;border-radius:999px;z-index:2000;opacity:0;transition:opacity .25s,transform .25s;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#ccc;border-radius:2px}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-brand"><span>📦</span> Pedidos</div>
+  <button class="btn-back" id="btnBack">
+    <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    Admin
+  </button>
+</header>
+
+<div class="filter-bar" id="filterBar">
+  <button class="filter-chip active" data-status="all">Todos</button>
+  <button class="filter-chip" data-status="pendiente">⏳ Pendientes</button>
+  <button class="filter-chip" data-status="confirmado">✅ Confirmados</button>
+  <button class="filter-chip" data-status="entregado">📬 Entregados</button>
+  <button class="filter-chip" data-status="cancelado">❌ Cancelados</button>
+</div>
+
+<main class="main">
+  <div class="stats-grid" id="statsGrid" style="display:none"></div>
+  <div id="loadingState" class="loading"><div class="spinner"></div>Cargando pedidos…</div>
+  <div id="orderList" class="order-list" style="display:none"></div>
+  <div id="emptyState" class="empty" style="display:none">
+    <div class="empty-icon">📭</div>
+    <p>No hay pedidos en esta categoría.</p>
+  </div>
+</main>
+
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">🗑️</div>
+    <h3 id="confirmTitle">¿Eliminar pedido?</h3>
+    <p id="confirmText">Esta acción no se puede deshacer.</p>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" id="confirmCancel">Cancelar</button>
+      <button class="confirm-ok" id="confirmOk">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, collection, doc, updateDoc, deleteDoc, onSnapshot, getDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  getAuth, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { firebaseConfig, APP_CONFIG, PLANS } from "./firebase-config.js";
+
+const app  = initializeApp(firebaseConfig);
+const db   = getFirestore(app);
+const auth = getAuth(app);
+
+const params   = new URLSearchParams(location.search);
+let tenantId   = params.get("t");
+let allOrders  = [];
+let activeFilter = "all";
+let tenantConfig = {};
+let confirmCb  = null;
+
+const $ = id => document.getElementById(id);
+
+/* ── Auth ── */
+onAuthStateChanged(auth, async user => {
+  if (!user) { window.location.href = "admin.html"; return; }
+  if (!tenantId) {
+    try {
+      const snap = await getDoc(doc(db, `users/${user.uid}`));
+      tenantId = snap.exists() ? snap.data().tenantId : user.uid;
+    } catch { tenantId = user.uid; }
+  }
+  loadTenantConfig();
+  startListener();
+});
+
+async function loadTenantConfig() {
+  try {
+    const snap = await getDoc(doc(db, `tenants/${tenantId}/settings/config`));
+    if (snap.exists()) tenantConfig = snap.data();
+  } catch {}
+  try {
+    const planSnap = await getDoc(doc(db, `tenants/${tenantId}/settings/plan`));
+    if (planSnap.exists() && planSnap.data().status === "suspended") {
+      document.querySelector("main").innerHTML = `<div style="text-align:center;padding:60px 16px;color:#666"><div style="font-size:2.5rem">⛔</div><h2 style="margin:10px 0 6px">Cuenta suspendida</h2><p>Contactá al soporte para renovar tu plan.</p></div>`;
+    }
+  } catch {}
+}
+
+/* ── Back ── */
+$("btnBack").onclick = () => { window.location.href = `admin.html`; };
+
+/* ── Filters ── */
+document.querySelectorAll(".filter-chip").forEach(chip => {
+  chip.onclick = () => {
+    document.querySelectorAll(".filter-chip").forEach(c => c.classList.remove("active"));
+    chip.classList.add("active");
+    activeFilter = chip.dataset.status;
+    render();
+  };
+});
+
+/* ── Firestore ── */
+function startListener() {
+  onSnapshot(collection(db, `tenants/${tenantId}/orders`), snap => {
+    allOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+    $("loadingState").style.display = "none";
+    $("statsGrid").style.display = "grid";
+    render();
+  }, err => {
+    $("loadingState").innerHTML = "⚠️ Error al cargar pedidos.";
+    console.error(err);
+  });
+}
+
+/* ── Render ── */
+function render() {
+  const filtered = activeFilter === "all"
+    ? allOrders
+    : allOrders.filter(o => o.status === activeFilter);
+
+  // Stats
+  const total     = allOrders.length;
+  const pendiente = allOrders.filter(o => o.status === "pendiente").length;
+  const revenue   = allOrders.filter(o => o.status !== "cancelado").reduce((a, o) => a + (o.total || 0), 0);
+  const currency  = tenantConfig.currencySymbol || APP_CONFIG.currencySymbol;
+
+  $("statsGrid").innerHTML = `
+    <div class="stat-card"><div class="stat-val">${total}</div><div class="stat-label">Total pedidos</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--orange)">${pendiente}</div><div class="stat-label">Pendientes</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--green)">${currency}${revenue.toLocaleString()}</div><div class="stat-label">Ingresos</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--blue)">${allOrders.filter(o=>o.status==="entregado").length}</div><div class="stat-label">Entregados</div></div>
+  `;
+
+  const orderList = $("orderList");
+  orderList.innerHTML = "";
+
+  if (!filtered.length) {
+    orderList.style.display = "none";
+    $("emptyState").style.display = "block";
+    return;
+  }
+
+  $("emptyState").style.display = "none";
+  orderList.style.display = "grid";
+
+  filtered.forEach(order => {
+    const date = order.createdAt?.seconds
+      ? new Date(order.createdAt.seconds * 1000).toLocaleString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
+      : "—";
+
+    const card = document.createElement("div");
+    card.className = "order-card";
+    card.innerHTML = `
+      <div class="order-header">
+        <div>
+          <div class="order-id">Pedido #${order.id.slice(-6).toUpperCase()}</div>
+          <div class="order-time">${date}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+          <span class="order-total">${currency}${(order.total || 0).toLocaleString()}</span>
+          <span class="order-status status-${order.status || 'pendiente'}">${statusLabel(order.status)}</span>
+          <span style="font-size:1rem;color:var(--sub)">▾</span>
+        </div>
+      </div>
+      <div class="order-body" id="body-${order.id}">
+        <div class="order-items">
+          ${(order.items || []).map(item => `
+            <div class="order-item-row">
+              <img class="order-item-thumb" src="${esc(item.imageUrl || placeholder(item.title))}" alt="${esc(item.title)}"
+                   onerror="this.src='${placeholder(item.title)}'">
+              <div class="order-item-info">
+                <div class="order-item-title">${esc(item.title)}</div>
+                <div class="order-item-sub">x${item.qty} × ${currency}${(item.price || 0).toLocaleString()} = ${currency}${((item.price || 0) * item.qty).toLocaleString()}</div>
+              </div>
+            </div>`).join("")}
+        </div>
+        <div class="order-total-row">
+          <span>Total</span>
+          <span>${currency}${(order.total || 0).toLocaleString()}</span>
+        </div>
+        <div class="order-actions">
+          <select class="status-select" data-id="${order.id}">
+            <option value="pendiente"  ${order.status==="pendiente"  ? "selected":""}>⏳ Pendiente</option>
+            <option value="confirmado" ${order.status==="confirmado" ? "selected":""}>✅ Confirmado</option>
+            <option value="entregado"  ${order.status==="entregado"  ? "selected":""}>📬 Entregado</option>
+            <option value="cancelado"  ${order.status==="cancelado"  ? "selected":""}>❌ Cancelado</option>
+          </select>
+          <button class="btn-wa-order" data-order="${order.id}">
+            <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.974 2C6.465 2 2 6.465 2 11.974c0 1.87.516 3.622 1.416 5.12L2 22l5.066-1.388A9.929 9.929 0 0011.974 22C17.483 22 22 17.535 22 12.026 22 6.465 17.483 2 11.974 2zm0 18.184a8.173 8.173 0 01-4.296-1.216l-.308-.183-3.006.822.855-2.928-.2-.32a8.173 8.173 0 01-1.258-4.385c0-4.518 3.674-8.192 8.213-8.192 4.54 0 8.213 3.674 8.213 8.192 0 4.539-3.674 8.21-8.213 8.21z"/></svg>
+            WhatsApp
+          </button>
+          <button class="btn-del-order" data-id="${order.id}">🗑 Eliminar</button>
+        </div>
+      </div>`;
+
+    // Toggle body
+    card.querySelector(".order-header").onclick = () => {
+      const body = card.querySelector(".order-body");
+      body.classList.toggle("open");
+    };
+
+    // Status change
+    card.querySelector(".status-select").onchange = async e => {
+      await updateDoc(doc(db, `tenants/${tenantId}/orders`, order.id), { status: e.target.value });
+      showToast("Estado actualizado ✓");
+    };
+
+    // WhatsApp confirm
+    card.querySelector(".btn-wa-order").onclick = () => {
+      const wa  = tenantConfig.whatsappNumber || APP_CONFIG.whatsappNumber;
+      let msg   = `Confirmación de pedido #${order.id.slice(-6).toUpperCase()}\n\n`;
+      (order.items || []).forEach(i => {
+        msg += `• ${i.title} x${i.qty} = ${currency}${((i.price || 0) * i.qty).toLocaleString()}\n`;
+      });
+      msg += `\n*Total: ${currency}${(order.total || 0).toLocaleString()}*\n\n¿Podés confirmarme tu pedido?`;
+      window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, "_blank");
+    };
+
+    // Delete
+    card.querySelector(".btn-del-order").onclick = () => {
+      openConfirm("¿Eliminar pedido?", "Esta acción no se puede deshacer.", async () => {
+        await deleteDoc(doc(db, `tenants/${tenantId}/orders`, order.id));
+        showToast("Pedido eliminado");
+      });
+    };
+
+    orderList.appendChild(card);
+  });
+}
+
+function statusLabel(s) {
+  return { pendiente: "⏳ Pendiente", confirmado: "✅ Confirmado", entregado: "📬 Entregado", cancelado: "❌ Cancelado" }[s] || s;
+}
+
+/* ── Confirm ── */
+function openConfirm(title, text, cb) {
+  $("confirmTitle").textContent = title; $("confirmText").textContent = text; confirmCb = cb;
+  $("confirmOverlay").classList.add("open");
+}
+$("confirmCancel").onclick = () => $("confirmOverlay").classList.remove("open");
+$("confirmOk").onclick = async () => {
+  $("confirmOverlay").classList.remove("open");
+  if (confirmCb) await confirmCb(); confirmCb = null;
+};
+
+/* ── Helpers ── */
+function esc(t = "") { const d = document.createElement("div"); d.textContent = String(t); return d.innerHTML; }
+function placeholder(t = "") { return `https://via.placeholder.com/80x80/f5f5f5/999?text=${encodeURIComponent(t || "IMG")}`; }
+function showToast(msg) { const t = $("toast"); t.textContent = msg; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 2200); }
+</script>
+</body>
+</html>

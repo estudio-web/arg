@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>IN-STORE – Tu tienda online en minutos</title>
+<meta name="description" content="Catálogo online, carrito, pedidos y WhatsApp integrado. Creá tu tienda profesional sin técnicos ni complicaciones." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --yellow:#ffe600;--yellow-dk:#f0d000;
+  --blue:#3483fa;--blue-dk:#2968c8;
+  --green:#00a650;--green-dk:#007a3d;
+  --dark:#0a0a0f;--dark2:#12121a;--dark3:#1c1c28;--dark4:#242433;
+  --text:#f0f0f8;--sub:#9090b0;--border:rgba(255,255,255,.08);
+  --white:#fff;
+  --radius:12px;--radius-lg:20px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Nunito',Arial,sans-serif;background:var(--dark);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* HEADER */
+.header{position:sticky;top:0;z-index:100;background:rgba(10,10,15,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 20px}
+.header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:62px;gap:12px}
+.brand{font-size:1.1rem;font-weight:900;color:var(--yellow);letter-spacing:-.3px;display:flex;align-items:center;gap:6px}
+.brand span{font-size:1.3rem}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-link{padding:7px 14px;border-radius:8px;font-size:.85rem;font-weight:700;color:var(--sub);text-decoration:none;transition:color .15s,background .15s}
+.nav-link:hover{color:var(--text);background:rgba(255,255,255,.06)}
+@media(max-width:600px){.nav-links{display:none}}
+.btn-cta-sm{padding:9px 20px;background:var(--yellow);color:#111;border:none;border-radius:8px;font-family:inherit;font-size:.88rem;font-weight:900;cursor:pointer;text-decoration:none;transition:background .15s,transform .1s;white-space:nowrap}
+.btn-cta-sm:hover{background:var(--yellow-dk)}
+.btn-cta-sm:active{transform:scale(.97)}
+
+/* HERO */
+.hero{padding:80px 20px 70px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;top:-40%;left:50%;transform:translateX(-50%);width:800px;height:800px;background:radial-gradient(ellipse,rgba(255,230,0,.08) 0%,transparent 70%);pointer-events:none}
+.hero-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(255,230,0,.1);border:1px solid rgba(255,230,0,.2);color:var(--yellow);font-size:.78rem;font-weight:800;padding:5px 14px;border-radius:999px;margin-bottom:22px;text-transform:uppercase;letter-spacing:.5px}
+.hero h1{font-size:clamp(2rem,6vw,3.6rem);font-weight:900;line-height:1.1;margin-bottom:18px;letter-spacing:-.5px}
+.hero h1 em{font-style:normal;color:var(--yellow)}
+.hero p{font-size:clamp(.95rem,2vw,1.15rem);color:var(--sub);line-height:1.6;max-width:580px;margin:0 auto 34px}
+.hero-actions{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.btn-primary-lg{display:inline-flex;align-items:center;gap:8px;padding:15px 32px;background:var(--yellow);color:#111;border:none;border-radius:var(--radius);font-family:inherit;font-size:1rem;font-weight:900;cursor:pointer;text-decoration:none;transition:background .15s,transform .1s,box-shadow .15s;box-shadow:0 8px 30px rgba(255,230,0,.25)}
+.btn-primary-lg:hover{background:var(--yellow-dk);transform:translateY(-2px);box-shadow:0 12px 36px rgba(255,230,0,.35)}
+.btn-primary-lg:active{transform:scale(.97)}
+.btn-secondary-lg{display:inline-flex;align-items:center;gap:8px;padding:15px 28px;background:transparent;color:var(--text);border:1.5px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.95rem;font-weight:800;cursor:pointer;text-decoration:none;transition:background .15s,border-color .15s}
+.btn-secondary-lg:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.2)}
+.hero-note{font-size:.8rem;color:var(--sub);margin-top:14px}
+.hero-note strong{color:var(--green)}
+
+/* DEMO PREVIEW */
+.preview-section{padding:0 20px 80px;display:flex;justify-content:center}
+.preview-phone{width:min(280px,70vw);background:var(--dark3);border-radius:32px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 2px rgba(255,255,255,.06);position:relative}
+.preview-notch{height:30px;background:var(--dark4);display:flex;align-items:center;justify-content:center;gap:6px}
+.preview-notch-dot{width:8px;height:8px;border-radius:50%;background:var(--dark)}
+.preview-screen{padding:12px}
+.preview-bar{background:var(--yellow);border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.preview-bar-text{flex:1;background:rgba(255,255,255,.6);border-radius:4px;height:18px}
+.preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.preview-card{background:rgba(255,255,255,.06);border-radius:10px;overflow:hidden;aspect-ratio:1}
+.preview-card-img{width:100%;height:65%;background:linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.04))}
+.preview-card-body{padding:5px 6px}
+.preview-card-price{height:9px;background:rgba(255,255,255,.2);border-radius:3px;width:60%;margin-bottom:3px}
+.preview-card-title{height:7px;background:rgba(255,255,255,.1);border-radius:3px;width:80%}
+
+/* FEATURES */
+.section{padding:70px 20px}
+.section-inner{max-width:1100px;margin:0 auto}
+.section-tag{display:inline-block;background:rgba(52,131,250,.1);border:1px solid rgba(52,131,250,.2);color:var(--blue);font-size:.72rem;font-weight:800;padding:4px 12px;border-radius:999px;margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px}
+.section-title{font-size:clamp(1.6rem,4vw,2.4rem);font-weight:900;line-height:1.15;margin-bottom:12px;letter-spacing:-.3px}
+.section-sub{font-size:clamp(.9rem,2vw,1.05rem);color:var(--sub);line-height:1.6;max-width:560px;margin-bottom:40px}
+
+.features-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.feat-card{background:var(--dark3);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;transition:border-color .2s,transform .2s}
+.feat-card:hover{border-color:rgba(255,230,0,.25);transform:translateY(-3px)}
+.feat-icon{font-size:2rem;margin-bottom:12px}
+.feat-title{font-size:1rem;font-weight:900;margin-bottom:6px}
+.feat-desc{font-size:.85rem;color:var(--sub);line-height:1.55}
+
+/* HOW IT WORKS */
+.how-section{padding:70px 20px;background:var(--dark2)}
+.steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px;margin-top:40px}
+.step{text-align:center;padding:24px 20px}
+.step-num{width:48px;height:48px;border-radius:50%;background:rgba(255,230,0,.12);border:2px solid rgba(255,230,0,.3);color:var(--yellow);font-size:1.2rem;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.step-title{font-size:.95rem;font-weight:800;margin-bottom:6px}
+.step-desc{font-size:.83rem;color:var(--sub);line-height:1.5}
+
+/* PLANS */
+.plans-section{padding:70px 20px}
+.plans-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:40px}
+.plan-card{background:var(--dark3);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:26px 22px;position:relative;transition:border-color .2s,transform .2s}
+.plan-card:hover{transform:translateY(-4px)}
+.plan-card.popular{border-color:var(--yellow);background:var(--dark4)}
+.popular-tag{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--yellow);color:#111;font-size:.7rem;font-weight:900;padding:4px 14px;border-radius:999px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+.plan-name{font-size:1.05rem;font-weight:900;margin-bottom:6px}
+.plan-price{font-size:2rem;font-weight:900;line-height:1;margin-bottom:4px}
+.plan-price span{font-size:.9rem;font-weight:600;color:var(--sub)}
+.plan-period{font-size:.78rem;color:var(--sub);margin-bottom:18px}
+.plan-features{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:22px}
+.plan-features li{font-size:.85rem;color:var(--sub);display:flex;align-items:center;gap:7px}
+.plan-features li::before{content:"✓";color:var(--green);font-weight:900;font-size:.85rem;flex-shrink:0}
+.plan-features li.no::before{content:"✗";color:#555}
+.plan-features li.no{color:#555}
+.btn-plan{width:100%;padding:12px;background:rgba(255,255,255,.07);color:var(--text);border:1.5px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.9rem;font-weight:800;cursor:pointer;transition:background .15s,border-color .15s;text-decoration:none;display:block;text-align:center}
+.plan-card.popular .btn-plan{background:var(--yellow);color:#111;border-color:var(--yellow)}
+.btn-plan:hover{background:rgba(255,255,255,.12)}
+.plan-card.popular .btn-plan:hover{background:var(--yellow-dk)}
+
+/* TESTIMONIALS */
+.testi-section{padding:70px 20px;background:var(--dark2)}
+.testi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-top:40px}
+.testi-card{background:var(--dark3);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px}
+.testi-stars{color:var(--yellow);font-size:1rem;margin-bottom:10px}
+.testi-text{font-size:.88rem;color:var(--sub);line-height:1.6;margin-bottom:14px;font-style:italic}
+.testi-author{display:flex;align-items:center;gap:10px}
+.testi-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--yellow),var(--orange));display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.testi-name{font-weight:800;font-size:.88rem}
+.testi-biz{font-size:.75rem;color:var(--sub)}
+
+/* FAQ */
+.faq-section{padding:70px 20px}
+.faq-list{max-width:700px;margin-top:40px}
+.faq-item{border-bottom:1px solid var(--border)}
+.faq-q{padding:16px 0;font-weight:800;font-size:.92rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;user-select:none}
+.faq-q::after{content:"▾";font-size:1rem;color:var(--sub);transition:transform .2s;flex-shrink:0}
+.faq-item.open .faq-q::after{transform:rotate(-180deg)}
+.faq-a{max-height:0;overflow:hidden;font-size:.87rem;color:var(--sub);line-height:1.6;transition:max-height .3s,padding .3s}
+.faq-item.open .faq-a{max-height:300px;padding-bottom:14px}
+
+/* CTA FINAL */
+.cta-section{padding:80px 20px;text-align:center;background:linear-gradient(135deg,var(--dark3),var(--dark4));position:relative;overflow:hidden}
+.cta-section::before{content:"";position:absolute;top:-50%;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(ellipse,rgba(255,230,0,.06) 0%,transparent 70%);pointer-events:none}
+.cta-section h2{font-size:clamp(1.6rem,4vw,2.6rem);font-weight:900;margin-bottom:14px;letter-spacing:-.3px}
+.cta-section p{font-size:clamp(.9rem,2vw,1.1rem);color:var(--sub);margin-bottom:30px;max-width:520px;margin-left:auto;margin-right:auto}
+.cta-actions{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+
+/* FOOTER */
+.footer{background:var(--dark2);border-top:1px solid var(--border);padding:32px 20px;text-align:center;font-size:.8rem;color:var(--sub)}
+.footer-brand{font-size:1rem;font-weight:900;color:var(--yellow);margin-bottom:8px}
+.footer-links{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.footer-link{color:var(--sub);text-decoration:none;transition:color .15s}
+.footer-link:hover{color:var(--text)}
+
+/* WA FLOAT */
+.wa-float{position:fixed;right:18px;bottom:18px;width:56px;height:56px;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(37,211,102,.4);cursor:pointer;z-index:200;transition:transform .15s,background .15s;text-decoration:none}
+.wa-float:hover{background:#1faa52;transform:scale(1.06)}
+.wa-float svg{width:28px;height:28px;fill:#fff}
+
+/* UTILS */
+.text-yellow{color:var(--yellow)}
+.text-green{color:var(--green)}
+.chip{display:inline-block;background:rgba(0,166,80,.1);border:1px solid rgba(0,166,80,.2);color:var(--green);font-size:.72rem;font-weight:800;padding:3px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:.4px}
+
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#334155;border-radius:2px}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="brand"><span>🛍️</span> IN-STORE</div>
+    <nav class="nav-links">
+      <a href="#features" class="nav-link">Funciones</a>
+      <a href="#plans" class="nav-link">Planes</a>
+      <a href="#faq" class="nav-link">FAQ</a>
+    </nav>
+    <a href="#plans" class="btn-cta-sm">Empezar gratis</a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-tag">✨ Lanzá tu tienda hoy mismo</div>
+  <h1>Tu tienda online<br /><em>lista en minutos</em></h1>
+  <p>Catálogo de productos, carrito, pedidos por WhatsApp y panel de administración. Todo sin técnicos, sin complicaciones.</p>
+  <div class="hero-actions">
+    <a href="#plans" class="btn-primary-lg">
+      🚀 Comenzar gratis por 14 días
+    </a>
+    <a href="#features" class="btn-secondary-lg">Ver funciones →</a>
+  </div>
+  <p class="hero-note">✓ Sin tarjeta de crédito &nbsp;·&nbsp; <strong>14 días gratis</strong> &nbsp;·&nbsp; Sin permanencia</p>
+</section>
+
+<!-- PHONE MOCKUP -->
+<div class="preview-section">
+  <div class="preview-phone">
+    <div class="preview-notch">
+      <div class="preview-notch-dot"></div>
+      <div class="preview-notch-dot"></div>
+      <div class="preview-notch-dot"></div>
+    </div>
+    <div class="preview-screen">
+      <div class="preview-bar">
+        <div style="font-size:.62rem;font-weight:900;color:#333">🛍️ Mi Tienda</div>
+        <div class="preview-bar-text"></div>
+      </div>
+      <div class="preview-grid">
+        <div class="preview-card">
+          <div class="preview-card-img" style="background:linear-gradient(135deg,#3483fa22,#3483fa08)"></div>
+          <div class="preview-card-body"><div class="preview-card-price"></div><div class="preview-card-title"></div></div>
+        </div>
+        <div class="preview-card">
+          <div class="preview-card-img" style="background:linear-gradient(135deg,#ffe60022,#ffe60008)"></div>
+          <div class="preview-card-body"><div class="preview-card-price"></div><div class="preview-card-title"></div></div>
+        </div>
+        <div class="preview-card">
+          <div class="preview-card-img" style="background:linear-gradient(135deg,#00a65022,#00a65008)"></div>
+          <div class="preview-card-body"><div class="preview-card-price"></div><div class="preview-card-title"></div></div>
+        </div>
+        <div class="preview-card">
+          <div class="preview-card-img" style="background:linear-gradient(135deg,#f9731622,#f9731608)"></div>
+          <div class="preview-card-body"><div class="preview-card-price"></div><div class="preview-card-title"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="section-inner">
+    <div class="section-tag">Funcionalidades</div>
+    <h2 class="section-title">Todo lo que necesitás<br />para vender online</h2>
+    <p class="section-sub">Sin complicaciones técnicas. Desde el día uno.</p>
+
+    <div class="features-grid">
+      <div class="feat-card">
+        <div class="feat-icon">🛍️</div>
+        <div class="feat-title">Catálogo profesional</div>
+        <div class="feat-desc">Mostrá tus productos con fotos, precios, categorías y promociones. Diseño limpio y moderno que convierte visitantes en clientes.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🛒</div>
+        <div class="feat-title">Carrito de compras</div>
+        <div class="feat-desc">Tus clientes agregan productos, ajustan cantidades y calculan el total. Persistencia automática para que no pierdan su pedido.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📱</div>
+        <div class="feat-title">Pedidos por WhatsApp</div>
+        <div class="feat-desc">El pedido completo llega a tu WhatsApp en segundos. Detalle de productos, cantidades y total listo para confirmar.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">⚙️</div>
+        <div class="feat-title">Panel de administración</div>
+        <div class="feat-desc">Cargá y editá productos desde el celular. Activá/desactivá con un switch. Subí fotos directo desde tu galería.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📦</div>
+        <div class="feat-title">Gestión de pedidos</div>
+        <div class="feat-desc">Llevá el control de todos tus pedidos. Cambiá estados, confirmá por WhatsApp y filtrá por pendientes, entregados o cancelados.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📊</div>
+        <div class="feat-title">Control interno</div>
+        <div class="feat-desc">Gestioná costos, márgenes de ganancia, stock y ganancias acumuladas. Tu mini ERP personal sin complicaciones.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🔥</div>
+        <div class="feat-title">Promociones y destacados</div>
+        <div class="feat-desc">Mostrá productos con descuento, badge de oferta y modal automático al entrar. Aumentá las conversiones con promociones visuales.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🏷️</div>
+        <div class="feat-title">Categorías</div>
+        <div class="feat-desc">Organizá tu catálogo con categorías personalizadas. Filtros en chips para que tus clientes encuentren lo que buscan al instante.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📤</div>
+        <div class="feat-title">Compartir catálogo</div>
+        <div class="feat-desc">Un botón para compartir tu tienda por WhatsApp o redes sociales. Link único por negocio, listo para enviar.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section">
+  <div class="section-inner">
+    <div class="section-tag">Cómo funciona</div>
+    <h2 class="section-title">En 4 pasos, empezás a vender</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-title">Registrá tu negocio</div>
+        <div class="step-desc">Contactanos por WhatsApp. En minutos te enviamos tus datos de acceso.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-title">Configurá tu tienda</div>
+        <div class="step-desc">Nombre, WhatsApp, moneda. Tardás menos de 2 minutos.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-title">Cargá tus productos</div>
+        <div class="step-desc">Fotos, precios, categorías. Todo desde el celular, sin complicaciones.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-title">¡Compartí y vendé!</div>
+        <div class="step-desc">Compartí el link de tu catálogo y empezá a recibir pedidos por WhatsApp.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PLANS -->
+<section class="plans-section" id="plans">
+  <div class="section-inner">
+    <div class="section-tag">Planes y precios</div>
+    <h2 class="section-title">Elegí tu plan</h2>
+    <p class="section-sub">Empezá gratis, crecé cuando quieras. Sin permanencia.</p>
+
+    <div class="plans-grid">
+      <!-- TRIAL -->
+      <div class="plan-card">
+        <div class="plan-name">Trial</div>
+        <div class="plan-price">$0 <span>/ mes</span></div>
+        <div class="plan-period">14 días gratis, sin tarjeta</div>
+        <ul class="plan-features">
+          <li>Hasta 3 productos</li>
+          <li>Catálogo público</li>
+          <li>Pedidos por WhatsApp</li>
+          <li class="no">Sin categorías</li>
+          <li class="no">Sin panel de pedidos</li>
+          <li class="no">Sin control interno</li>
+        </ul>
+        <a href="#" class="btn-plan" onclick="openWA(event,'Trial')">Empezar gratis</a>
+      </div>
+
+      <!-- BÁSICO -->
+      <div class="plan-card">
+        <div class="plan-name">Básico</div>
+        <div class="plan-price">$4.999 <span>/ mes</span></div>
+        <div class="plan-period">Renovación mensual</div>
+        <ul class="plan-features">
+          <li>Hasta 60 productos</li>
+          <li>Categorías ilimitadas</li>
+          <li>Catálogo público</li>
+          <li>Pedidos por WhatsApp</li>
+          <li>Panel de pedidos</li>
+          <li class="no">Sin control interno</li>
+        </ul>
+        <a href="#" class="btn-plan" onclick="openWA(event,'Básico')">Elegir Básico</a>
+      </div>
+
+      <!-- PRO -->
+      <div class="plan-card popular">
+        <div class="popular-tag">⭐ Más popular</div>
+        <div class="plan-name">Pro</div>
+        <div class="plan-price">$9.999 <span>/ mes</span></div>
+        <div class="plan-period">Renovación mensual</div>
+        <ul class="plan-features">
+          <li>Hasta 150 productos</li>
+          <li>Categorías ilimitadas</li>
+          <li>Catálogo público</li>
+          <li>Pedidos por WhatsApp</li>
+          <li>Panel de pedidos</li>
+          <li>Control interno (costos, márgenes)</li>
+        </ul>
+        <a href="#" class="btn-plan" onclick="openWA(event,'Pro')">Elegir Pro</a>
+      </div>
+
+      <!-- PREMIUM -->
+      <div class="plan-card">
+        <div class="plan-name text-yellow">Premium</div>
+        <div class="plan-price">$19.999 <span>/ mes</span></div>
+        <div class="plan-period">Renovación mensual</div>
+        <ul class="plan-features">
+          <li>Productos ilimitados</li>
+          <li>Categorías ilimitadas</li>
+          <li>Catálogo público</li>
+          <li>Pedidos por WhatsApp</li>
+          <li>Panel de pedidos</li>
+          <li>Control interno completo</li>
+        </ul>
+        <a href="#" class="btn-plan" onclick="openWA(event,'Premium')">Elegir Premium</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testi-section">
+  <div class="section-inner">
+    <div class="section-tag">Lo que dicen nuestros clientes</div>
+    <h2 class="section-title">Negocios que ya están vendiendo</h2>
+    <div class="testi-grid">
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-text">"En un día tenía mi catálogo listo y compartido por WhatsApp. Mis clientes lo adoran y yo recibo pedidos ordenados."</div>
+        <div class="testi-author">
+          <div class="testi-avatar">👗</div>
+          <div><div class="testi-name">María G.</div><div class="testi-biz">Ropa y accesorios</div></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-text">"Antes me mandaban mensajes preguntando precios. Ahora mando el link y listo. Ahorro horas de responder."</div>
+        <div class="testi-author">
+          <div class="testi-avatar">🧁</div>
+          <div><div class="testi-name">Sofía R.</div><div class="testi-biz">Pastelería</div></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-text">"El control interno me ayuda a ver mis márgenes reales. Algo que antes hacía en una planilla de Excel complicadísima."</div>
+        <div class="testi-author">
+          <div class="testi-avatar">🔧</div>
+          <div><div class="testi-name">Carlos M.</div><div class="testi-biz">Ferretería y hogar</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section" id="faq">
+  <div class="section-inner">
+    <div class="section-tag">Preguntas frecuentes</div>
+    <h2 class="section-title">¿Tenés dudas? Acá las resolvemos</h2>
+    <div class="faq-list" id="faqList">
+      <div class="faq-item">
+        <div class="faq-q">¿Necesito saber programar para usarlo?</div>
+        <div class="faq-a">Para nada. Está diseñado para que cualquier persona lo use desde el celular. Si sabés usar WhatsApp, sabés usar IN-STORE.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">¿Cómo recibo los pedidos?</div>
+        <div class="faq-a">Directamente por WhatsApp. El sistema arma un mensaje con todos los productos, cantidades y el total. Vos solo tenés que confirmar.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">¿Puedo cargar fotos de mis productos?</div>
+        <div class="faq-a">Sí. Podés subir imágenes desde tu galería o pegar un link de imagen. El sistema las guarda automáticamente.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">¿Qué pasa cuando vence el plan?</div>
+        <div class="faq-a">Tu catálogo público sigue visible para tus clientes, pero el panel de administración se bloquea hasta renovar. Te avisamos con varios días de anticipación.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">¿Puedo cambiar de plan cuando quiera?</div>
+        <div class="faq-a">Sí. Podés actualizar tu plan en cualquier momento. Solo contactanos por WhatsApp y lo resolvemos al instante.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">¿Hay permanencia mínima?</div>
+        <div class="faq-a">No. Los planes son mensuales y podés cancelar cuando quieras, sin penalidad.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-section">
+  <h2>¿Listo para empezar<br />a vender online?</h2>
+  <p>Creá tu tienda hoy, es gratis los primeros 14 días. Sin tarjeta de crédito.</p>
+  <div class="cta-actions">
+    <a href="#" class="btn-primary-lg" onclick="openWA(event,'Trial')">🚀 Quiero mi tienda gratis</a>
+    <a href="#" class="btn-secondary-lg" onclick="openWA(event,'')">💬 Tengo preguntas</a>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-brand">🛍️ IN-STORE</div>
+  <div>Tu catálogo online y gestión de pedidos en un solo lugar.</div>
+  <div class="footer-links">
+    <a href="#features" class="footer-link">Funciones</a>
+    <a href="#plans" class="footer-link">Planes</a>
+    <a href="#faq" class="footer-link">FAQ</a>
+  </div>
+</footer>
+
+<!-- WA FLOAT -->
+<a class="wa-float" href="#" onclick="openWA(event,'')" aria-label="WhatsApp">
+  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.974 2C6.465 2 2 6.465 2 11.974c0 1.87.516 3.622 1.416 5.12L2 22l5.066-1.388A9.929 9.929 0 0011.974 22C17.483 22 22 17.535 22 12.026 22 6.465 17.483 2 11.974 2zm0 18.184a8.173 8.173 0 01-4.296-1.216l-.308-.183-3.006.822.855-2.928-.2-.32a8.173 8.173 0 01-1.258-4.385c0-4.518 3.674-8.192 8.213-8.192 4.54 0 8.213 3.674 8.213 8.192 0 4.539-3.674 8.21-8.213 8.21z"/></svg>
+</a>
+
+<script>
+// WA number — change this
+const WA_NUMBER = "5490000000000";
+
+function openWA(e, plan) {
+  e.preventDefault();
+  const msg = plan
+    ? `Hola! Me interesa el plan *${plan}* de IN-STORE. ¿Me podés dar más info?`
+    : `Hola! Me interesa IN-STORE para mi negocio. ¿Me podés dar más información?`;
+  window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank");
+}
+
+// FAQ accordion
+document.querySelectorAll(".faq-q").forEach(q => {
+  q.onclick = () => {
+    const item = q.parentElement;
+    const isOpen = item.classList.contains("open");
+    document.querySelectorAll(".faq-item").forEach(i => i.classList.remove("open"));
+    if (!isOpen) item.classList.add("open");
+  };
+});
+
+// Smooth scroll nav
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  if (a.hasAttribute("onclick")) return;
+  a.addEventListener("click", e => {
+    const target = document.querySelector(a.getAttribute("href"));
+    if (target) { e.preventDefault(); target.scrollIntoView({ behavior: "smooth" }); }
+  });
+});
+</script>
+</body>
+</html>
