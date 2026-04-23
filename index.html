@@ -360,6 +360,55 @@ let promoShown   = false;
 let currentProduct = null;
 let qty          = 1;
 
+function parseMoney(value) {
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  let raw = String(value || "0").replace(/[^\d,.-]/g, "");
+  if (!raw) return 0;
+
+  const lastComma = raw.lastIndexOf(",");
+  const lastDot = raw.lastIndexOf(".");
+  if (lastComma !== -1 && lastDot !== -1) {
+    const decimalSep = lastComma > lastDot ? "," : ".";
+    const thousandsSep = decimalSep === "," ? "." : ",";
+    raw = raw.replace(new RegExp("\\" + thousandsSep, "g"), "").replace(decimalSep, ".");
+  } else if (lastComma !== -1) {
+    const parts = raw.split(",");
+    raw = parts.length === 2 && parts[1].length === 3
+      ? parts.join("")
+      : raw.replace(",", ".");
+  } else if (lastDot !== -1) {
+    const parts = raw.split(".");
+    const isThousands = parts.length > 2 || (parts.length === 2 && parts[1].length === 3);
+    raw = isThousands ? parts.join("") : raw;
+  }
+
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function productPrice(p) {
+  return parseMoney(p?.promoPrice || p?.price || 0);
+}
+
+function money(value) {
+  return CURRENCY + parseMoney(value).toLocaleString("es-AR", { maximumFractionDigits: 2 });
+}
+
+function syncCartPricesFromProducts() {
+  let changed = false;
+  cart = cart.map(item => {
+    const product = allProducts.find(p => p.id === item.id);
+    if (!product) return item;
+    const nextPrice = productPrice(product);
+    if (item.price !== nextPrice || item.title !== product.title || item.imageUrl !== product.imageUrl) {
+      changed = true;
+      return { ...item, title: product.title, imageUrl: product.imageUrl, price: nextPrice };
+    }
+    return item;
+  });
+  if (changed) saveCart();
+}
+
 /* ── Tenant settings ── */
 async function loadTenantSettings() {
   try {
@@ -384,6 +433,8 @@ onSnapshot(collection(db, `tenants/${tenantId}/categories`), snap => {
 /* ── Load products ── */
 onSnapshot(collection(db, `tenants/${tenantId}/products`), snap => {
   allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  syncCartPricesFromProducts();
+  updateCartBadge();
   loadingState.style.display = "none";
   filterAndRender();
   // Show promo modal after 2s if not shown yet
@@ -494,7 +545,7 @@ promo.innerHTML = `
   </div>
 `;
 
-gridEl.appendChild(promo);
+if (list.length > 4) gridEl.appendChild(promo);
 
 }
 
@@ -594,9 +645,10 @@ document.getElementById("btnAddCart").onclick = () => {
 /* ── Cart ── */
 function addToCart(p, amount) {
   const existing = cart.find(i => i.id === p.id);
-  const price    = parseFloat((p.promoPrice || p.price || "0").toString().replace(/[^0-9.,]/g, "").replace(",", "."));
+  const price    = productPrice(p);
   if (existing) {
     existing.qty += amount;
+    existing.price = price;
   } else {
     cart.push({ id: p.id, title: p.title, price, imageUrl: p.imageUrl, qty: amount });
   }
@@ -637,7 +689,7 @@ function renderCart() {
            onerror="this.src='${placeholder(item.title)}'">
       <div class="cart-item-info">
         <div class="cart-item-title">${esc(item.title)}</div>
-        <div class="cart-item-price">${CURRENCY}${item.price.toLocaleString()} x ${item.qty} = ${CURRENCY}${(item.price * item.qty).toLocaleString()}</div>
+        <div class="cart-item-price">${money(item.price)} x ${item.qty} = ${money(item.price * item.qty)}</div>
       </div>
       <div class="cart-item-ctrl">
         <button class="cart-item-qty-btn" data-id="${item.id}" data-action="dec">−</button>
@@ -652,7 +704,7 @@ function renderCart() {
 
   });
 
-  cartTotal.textContent = CURRENCY + total.toLocaleString();
+  cartTotal.textContent = money(total);
 
   cartItems.querySelectorAll(".cart-item-qty-btn").forEach(btn => {
     btn.onclick = () => {
@@ -685,9 +737,9 @@ document.getElementById("btnOrderWA").onclick = () => {
   cart.forEach(i => {
     const sub = i.price * i.qty;
     total += sub;
-    msg += `• ${i.title} x${i.qty} = ${CURRENCY}${sub.toLocaleString()}\n`;
+    msg += `• ${i.title} x${i.qty} = ${money(sub)}\n`;
   });
-  msg += `\n*Total: ${CURRENCY}${total.toLocaleString()}*`;
+  msg += `\n*Total: ${money(total)}*`;
   const wa = tenantConfig.whatsappNumber || APP_CONFIG.whatsappNumber;
   window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, "_blank");
 
