@@ -709,3 +709,39 @@ tr:hover td { background: var(--surface-2); }
   .copy-input-wrap { width: 100%; }
   .empty-state { padding: 34px 16px; }
 }
+
+/* Mobile link cards: keep URLs readable instead of one character per line. */
+@media (max-width: 768px) {
+  .link-card {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr);
+    align-items: start;
+  }
+  .link-card-icon {
+    float: none;
+    margin-right: 0;
+  }
+  .link-card-body {
+    min-width: 0;
+  }
+  .link-card-url {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: normal;
+    overflow-wrap: normal;
+    direction: ltr;
+  }
+  .link-card-actions {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .link-card-actions .btn-icon {
+    width: 100%;
+  }
+}
