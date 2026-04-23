@@ -1,0 +1,570 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — PagoSimple</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .tab-nav { display:flex; gap:4px; background:var(--bg); border-radius:var(--radius); padding:4px; margin-bottom:22px; width:fit-content; }
+  .tab-btn  { padding:9px 18px; background:transparent; border:none; border-radius:var(--radius-sm); font-size:13px; font-weight:600; color:var(--muted); cursor:pointer; transition:all .15s; font-family:var(--font-body); }
+  .tab-btn.active { background:var(--surface); color:var(--text); box-shadow:var(--shadow-sm); }
+  .tab-pane { display:none; }
+  .tab-pane.active { display:block; }
+
+  /* LINK CARDS */
+  .link-amount { font-size: 16px; font-weight: 800; color: var(--green); }
+  .link-desc { font-size: 12px; color: var(--muted); }
+  .btn-icon { width:32px;height:32px;border-radius:8px;background:var(--bg);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;flex-shrink:0; }
+  .btn-icon:hover { background:var(--border); }
+  .btn-icon svg { width:15px;height:15px;fill:var(--muted); }
+
+  /* ORDERS TABLE */
+  .status-select {
+    padding:4px 8px; border-radius:6px; border:1px solid var(--border);
+    font-family:var(--font-body); font-size:11px; font-weight:600; cursor:pointer;
+    background:var(--surface);
+  }
+  .comprobante-link { color:var(--blue); font-size:12px; font-weight:600; }
+  .comprobante-link:hover { text-decoration:underline; }
+
+  /* CONFIG */
+  .config-section { margin-bottom:24px; }
+  .brand-preview {
+    background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+    border-radius:var(--radius-lg); padding:20px 22px;
+    display:flex; align-items:center; gap:16px; margin-bottom:16px;
+    color:white;
+  }
+  .brand-preview-logo { width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800; }
+  .brand-preview-name { font-size:18px;font-weight:800; }
+  .brand-preview-sub  { font-size:12px;opacity:0.75;margin-top:2px; }
+
+  /* PLAN BAR */
+  .plan-bar {
+    background: var(--surface);
+    border:1.5px solid var(--border);
+    border-radius:var(--radius-lg);
+    padding:18px 22px;
+    display:flex; align-items:center; gap:16px;
+    margin-bottom:22px;
+  }
+  .plan-bar-info { flex:1; }
+  .plan-bar-name { font-size:15px; font-weight:800; }
+  .plan-bar-sub  { font-size:12px; color:var(--muted); margin-top:2px; }
+  .plan-bar-badge { padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700; }
+  .plan-bar-badge.free { background:var(--bg); color:var(--muted); }
+  .plan-bar-badge.pro  { background:var(--yellow); color:#7c4a00; }
+  .plan-bar-badge.trial { background:var(--bg); color:var(--muted); }
+  .plan-bar-badge.plan1 { background:var(--yellow); color:#7c4a00; }
+  .plan-bar-badge.plan2 { background:var(--green-light); color:var(--green-dark); }
+
+  /* MODAL LINK */
+  .url-preview {
+    background:var(--surface-2); border:1px solid var(--border);
+    border-radius:var(--radius); padding:12px 14px;
+    font-family:var(--font-mono); font-size:12px; color:var(--blue);
+    word-break:break-all; margin:12px 0;
+  }
+  .qr-container { text-align:center; margin:16px 0; }
+  .qr-container img { border-radius:var(--radius); border:1px solid var(--border); max-width:180px; }
+
+  /* FILTER ROW */
+  .filter-row { display:flex; gap:10px; margin-bottom:16px; align-items:center; flex-wrap:wrap; }
+  .filter-row .form-input { max-width:220px; padding:9px 12px; font-size:13px; }
+  .filter-row .form-select { padding:9px 12px; font-size:13px; }
+  .export-btn { margin-left:auto; }
+
+  @media (max-width: 768px) {
+    .filter-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .filter-row .form-input,
+    .filter-row .form-select,
+    .filter-row .export-btn {
+      max-width: none;
+      width: 100%;
+      margin-left: 0;
+    }
+    .page-header[style] {
+      display: grid !important;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .page-header[style] .btn {
+      width: 100%;
+      margin-left: 0 !important;
+    }
+    .plan-bar,
+    .brand-preview {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      padding: 16px;
+    }
+    .plan-bar .btn {
+      width: 100%;
+    }
+    .url-preview {
+      font-size: 11px;
+      max-height: 86px;
+      overflow: auto;
+    }
+    .qr-container img {
+      margin: 0 auto;
+      max-width: 160px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">pago<span>simple</span></div>
+  <div class="topbar-sep"></div>
+  <div class="topbar-title" id="tb-negocio">Cargando...</div>
+  <div class="topbar-right">
+    <div class="topbar-plan-badge free" id="tb-plan-badge">FREE</div>
+    <div class="avatar" id="tb-avatar">?</div>
+    <div class="topbar-user" id="tb-user"></div>
+    <button class="btn btn-secondary btn-sm" onclick="doLogout()">Salir</button>
+  </div>
+</div>
+
+<div class="app-layout">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-section-label">Principal</div>
+    <div class="sidebar-item active" onclick="showTab('overview')" id="nav-overview">
+      <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg> Dashboard
+    </div>
+    <div class="sidebar-item" onclick="showTab('links')" id="nav-links">
+      <svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg> Links de pago
+    </div>
+    <div class="sidebar-item" onclick="showTab('orders')" id="nav-orders">
+      <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg> Registros
+    </div>
+    <div class="sidebar-section-label">Configuración</div>
+    <div class="sidebar-item" onclick="showTab('config')" id="nav-config">
+      <svg viewBox="0 0 24 24"><path d="M12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5zm7.43-2.47c.04-.34.07-.68.07-1.03s-.03-.69-.07-1.03l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.34-.07.69-.07 1.03s.03.69.07 1.03l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.58 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65z"/></svg> Mi cuenta
+    </div>
+    <div class="sidebar-bottom">
+      <div id="sidebar-upgrade-box"></div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- ── TAB: OVERVIEW ───────────────────────────── -->
+    <div class="tab-pane active" id="tab-overview">
+      <div class="page-header">
+        <h1 id="overview-title">¡Hola! 👋</h1>
+        <p>Resumen de tu actividad</p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card green">
+          <div class="stat-label">Total recaudado</div>
+          <div class="stat-value green" id="stat-total">$0</div>
+          <div class="stat-sub">Pagos confirmados</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-label">Pagos recibidos</div>
+          <div class="stat-value blue" id="stat-count">0</div>
+          <div class="stat-sub">Total de órdenes</div>
+        </div>
+        <div class="stat-card yellow">
+          <div class="stat-label">Links activos</div>
+          <div class="stat-value yellow" id="stat-links">0</div>
+          <div class="stat-sub" id="stat-links-sub">de 5 en plan free</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Pendientes</div>
+          <div class="stat-value" id="stat-pending">0</div>
+          <div class="stat-sub">Por confirmar</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-icon green"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></div>
+          <div><h2>Últimos pagos</h2><p>Los 5 más recientes</p></div>
+          <button class="btn btn-secondary btn-sm" onclick="showTab('orders')" style="margin-left:auto">Ver todos</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Cliente</th><th>Monto</th><th>Fecha</th><th>Estado</th></tr></thead>
+            <tbody id="recent-orders"><tr><td colspan="4" class="td-muted" style="text-align:center;padding:20px">Cargando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: LINKS ──────────────────────────────── -->
+    <div class="tab-pane" id="tab-links">
+      <div class="page-header" style="display:flex;align-items:flex-start;gap:12px">
+        <div>
+          <h1>Links de pago</h1>
+          <p>Creá y gestioná tus links de cobro</p>
+        </div>
+        <button class="btn btn-primary" style="margin-left:auto;flex-shrink:0" onclick="openModal('modal-new-link')">
+          <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          Nuevo link
+        </button>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-body" id="limit-bar-container" style="padding:16px 22px"></div>
+      </div>
+
+      <div id="links-container">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+          <h3>Todavía no tenés links</h3>
+          <p>Creá tu primer link de pago para empezar a cobrar</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: ORDERS ─────────────────────────────── -->
+    <div class="tab-pane" id="tab-orders">
+      <div class="page-header">
+        <h1>Registros de pago</h1>
+        <p>Todos los comprobantes recibidos</p>
+      </div>
+
+      <div class="filter-row">
+        <input type="text" class="form-input" id="filter-search" placeholder="🔍 Buscar por nombre o DNI..." oninput="filterOrders()">
+        <select class="form-select" id="filter-status" onchange="filterOrders()">
+          <option value="">Todos los estados</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="confirmado">Confirmado</option>
+          <option value="rechazado">Rechazado</option>
+        </select>
+        <button class="btn btn-secondary btn-sm export-btn" onclick="exportCSV()">
+          <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          Exportar CSV
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Cliente</th><th>DNI</th><th>Monto</th><th>Link</th>
+                <th>Fecha</th><th>Comprobante</th><th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="orders-table">
+              <tr><td colspan="7" class="td-muted" style="text-align:center;padding:24px">Cargando órdenes...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: CONFIG ─────────────────────────────── -->
+    <div class="tab-pane" id="tab-config">
+      <div class="page-header">
+        <h1>Mi cuenta</h1>
+        <p>Configurá tus datos bancarios y branding</p>
+      </div>
+
+      <div class="plan-bar">
+        <div class="plan-bar-info">
+          <div class="plan-bar-name" id="cfg-plan-name">Plan Free</div>
+          <div class="plan-bar-sub" id="cfg-plan-sub">Hasta 5 links activos · Sin estadísticas avanzadas</div>
+        </div>
+        <div class="plan-bar-badge free" id="cfg-plan-badge">FREE</div>
+        <button class="btn btn-primary btn-sm" onclick="showUpgradeModal()" id="cfg-upgrade-btn">Ver planes</button>
+      </div>
+
+      <!-- Branding -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-icon yellow"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+          <div><h2>Branding</h2><p>Nombre y datos de tu negocio</p></div>
+        </div>
+        <div class="card-body">
+          <div id="brand-preview-el" class="brand-preview" style="display:none">
+            <div class="brand-preview-logo" id="bp-logo">P</div>
+            <div>
+              <div class="brand-preview-name" id="bp-name">Mi Negocio</div>
+              <div class="brand-preview-sub">Pago seguro por transferencia</div>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group" style="grid-column:1/-1">
+              <label class="form-label">Nombre del negocio</label>
+              <input type="text" id="cfg-negocio" class="form-input" placeholder="Mi Tienda Online" oninput="updateBrandPreview()">
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+              <label class="form-label">Logo (URL opcional)</label>
+              <input type="url" id="cfg-logo" class="form-input" placeholder="https://.../logo.png">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Datos bancarios -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-icon"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg></div>
+          <div><h2>Datos bancarios</h2><p>Los verá el cliente al pagar</p></div>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group" style="grid-column:1/-1">
+              <label class="form-label">Titular de la cuenta</label>
+              <input type="text" id="cfg-titular" class="form-input" placeholder="NOMBRE COMPLETO EN MAYÚSCULAS">
+            </div>
+            <div class="form-group">
+              <label class="form-label">CBU (22 dígitos)</label>
+              <input type="text" id="cfg-cbu" class="form-input" placeholder="0000003100032339781196" maxlength="22" inputmode="numeric">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Alias</label>
+              <input type="text" id="cfg-alias" class="form-input" placeholder="mi.alias.banco">
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+              <label class="form-label">WhatsApp (con código de país, sin +)</label>
+              <input type="text" id="cfg-whatsapp" class="form-input" placeholder="5492646706973" inputmode="numeric">
+              <span class="form-hint">Ej: 5492646706973 → Argentina (+54) + número sin el 0 inicial</span>
+            </div>
+          </div>
+          <div style="margin-top:18px">
+            <button class="btn btn-primary" onclick="saveConfig()">
+              <svg viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+              Guardar configuración
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app-layout -->
+
+<!-- ── MODAL: NUEVO LINK ─────────────────────────── -->
+<div class="modal-overlay" id="modal-new-link">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="card-header-icon"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></div>
+      <h3>Nuevo link de pago</h3>
+      <button class="modal-close" onclick="closeModal('modal-new-link')">
+        <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group" style="margin-bottom:14px">
+        <label class="form-label">Descripción del pago</label>
+        <input type="text" id="nl-desc" class="form-input" placeholder="Ej: Seña depto Nov, Cuota club, Producto X">
+      </div>
+      <div class="form-group" style="margin-bottom:14px">
+        <label class="form-label">Monto en pesos (sin signos)</label>
+        <input type="number" id="nl-monto" class="form-input" placeholder="15000" min="0" oninput="updateNewLinkPreview()">
+      </div>
+      <div id="nl-preview" style="display:none; background:linear-gradient(135deg,#009EE3,#0077c2); border-radius:10px; padding:16px 18px; color:white; margin-bottom:14px;">
+        <p style="font-size:11px;opacity:.8">El cliente verá</p>
+        <div style="font-size:26px;font-weight:800" id="nl-preview-monto">$0</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-new-link')">Cancelar</button>
+      <button class="btn btn-primary" onclick="createLink()">
+        <svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+        Crear link
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: VER LINK ───────────────────────────── -->
+<div class="modal-overlay" id="modal-view-link">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="vl-title">Mi link de pago</h3>
+      <button class="modal-close" onclick="closeModal('modal-view-link')">
+        <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="url-preview" id="vl-url"></div>
+      <div class="copy-input-wrap" style="margin-bottom:12px">
+        <input type="text" class="form-input" id="vl-url-input" readonly>
+        <button class="btn btn-secondary btn-sm" onclick="copyLinkURL()">Copiar URL</button>
+      </div>
+      <button class="btn btn-green btn-full" style="margin-bottom:10px" onclick="copyWhatsAppMsg()">
+        <svg viewBox="0 0 24 24" style="fill:white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.113.552 4.1 1.515 5.827L.057 23.854l6.174-1.62C7.99 23.406 9.961 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm.029 21.818c-1.87 0-3.653-.502-5.198-1.379l-.373-.22-3.865 1.016 1.029-3.766-.242-.385A9.763 9.763 0 0 1 2.18 12c0-5.42 4.41-9.829 9.849-9.829 5.438 0 9.849 4.41 9.849 9.829 0 5.42-4.411 9.818-9.849 9.818z"/></svg>
+        Copiar mensaje para WhatsApp
+      </button>
+      <div class="qr-container">
+        <p style="font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">QR del link</p>
+        <img id="vl-qr" src="" alt="QR">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: UPGRADE ────────────────────────────── -->
+<div class="modal-overlay" id="modal-upgrade">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>⭐ Planes disponibles</h3>
+      <button class="modal-close" onclick="closeModal('modal-upgrade')">
+        <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div style="text-align:center; padding:8px 0 20px">
+        <div style="font-size:48px; margin-bottom:12px">⭐</div>
+        <h3 style="font-size:22px; font-weight:800; margin-bottom:6px">PLAN 2</h3>
+        <div style="font-size:32px; font-weight:900; color:var(--blue); margin-bottom:4px">$25.000<span style="font-size:14px; font-weight:400; color:var(--muted)">/mes</span></div>
+        <p style="font-size:13px; color:var(--muted)">Links ilimitados · Estadísticas completas · Branding</p>
+      </div>
+      <div style="background:var(--bg); border-radius:var(--radius-lg); padding:16px 18px; margin-bottom:16px">
+        <div style="font-size:12px; font-weight:700; color:var(--muted); margin-bottom:10px">INCLUYE:</div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <div style="font-size:13px; color:var(--text)">✅ Hasta 50 links de pago</div>
+          <div style="font-size:13px; color:var(--text)">✅ Estadísticas completas</div>
+          <div style="font-size:13px; color:var(--text)">✅ Branding personalizado</div>
+          <div style="font-size:13px; color:var(--text)">✅ Exportar datos a CSV</div>
+          <div style="font-size:13px; color:var(--text)">✅ Soporte prioritario</div>
+        </div>
+      </div>
+      <p style="font-size:12px; color:var(--muted); text-align:center">Para activar o cambiar tu plan, contactate con nosotros por WhatsApp y te enviamos el link de pago.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-upgrade')">Cerrar</button>
+      <button class="btn btn-primary" onclick="contactUpgrade()">
+        <svg viewBox="0 0 24 24" style="fill:white;width:15px;height:15px"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.113.552 4.1 1.515 5.827L.057 23.854l6.174-1.62C7.99 23.406 9.961 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm.029 21.818c-1.87 0-3.653-.502-5.198-1.379l-.373-.22-3.865 1.016 1.029-3.766-.242-.385A9.763 9.763 0 0 1 2.18 12c0-5.42 4.41-9.829 9.849-9.829 5.438 0 9.849 4.41 9.849 9.829 0 5.42-4.411 9.818-9.849 9.818z"/></svg>
+        Contactar por WhatsApp
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="global-toast">
+  <div class="toast-icon success"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+  <span id="toast-text"></span>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="app.js"></script>
+<script>
+let DB, AUTH, UID, USER_PROFILE = {}, USER_CONFIG = {}, ALL_LINKS = [], ALL_ORDERS = [], CURRENT_LINK = null;
+
+(async () => {
+  const fb = initFirebase();
+  DB = fb.db;
+  AUTH = fb.auth;
+  AUTH.onAuthStateChanged(async user => {
+    if (!user) { window.location.href = "login.html"; return; }
+    UID = user.uid;
+    const snap = await DB.collection("users").doc(UID).get();
+    USER_PROFILE = snap.exists ? { id: snap.id, ...snap.data() } : {};
+    USER_PROFILE.plan = normalizePlan(USER_PROFILE);
+    if (USER_PROFILE.role === "superadmin") { window.location.href = "superadmin.html"; return; }
+    if (USER_PROFILE.active === false) { alert("Tu cuenta esta desactivada. Contacta al administrador."); await AUTH.signOut(); window.location.href = "login.html"; return; }
+    const initials = ((USER_PROFILE.nombre || "?")[0] + (USER_PROFILE.apellido || "")[0]).toUpperCase();
+    document.getElementById("tb-avatar").textContent = initials || "?";
+    document.getElementById("tb-user").textContent = USER_PROFILE.email || user.email || "";
+    document.getElementById("tb-negocio").textContent = USER_PROFILE.negocio || "Mi Negocio";
+    document.getElementById("overview-title").textContent = `Hola, ${USER_PROFILE.nombre || "usuario"}`;
+    const plan = getPlanMeta(USER_PROFILE.plan);
+    const planBadge = document.getElementById("tb-plan-badge");
+    planBadge.textContent = plan.name;
+    planBadge.className = `topbar-plan-badge ${USER_PROFILE.plan}`;
+    if (USER_PROFILE.plan !== "plan2") {
+      document.getElementById("sidebar-upgrade-box").innerHTML = `<div class="sidebar-upgrade"><p>Tu plan permite ${plan.maxLinks} link${plan.maxLinks === 1 ? "" : "s"}. Pedinos ampliar tu cuenta cuando lo necesites.</p><button class="btn-upgrade" onclick="showUpgradeModal()">Ver planes</button></div>`;
+    }
+    const cfgSnap = await DB.collection("users").doc(UID).collection("config").doc("main").get();
+    USER_CONFIG = cfgSnap.exists ? cfgSnap.data() : {};
+    fillConfigForm();
+    await loadLinks();
+    await loadOrders();
+    updateStats();
+  });
+})();
+
+function showTab(tab) {
+  document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".sidebar-item").forEach(i => i.classList.remove("active"));
+  document.getElementById("tab-" + tab).classList.add("active");
+  document.getElementById("nav-" + tab).classList.add("active");
+}
+async function doLogout() { await AUTH.signOut(); window.location.href = "login.html"; }
+
+async function loadLinks() {
+  const snap = await DB.collection("users").doc(UID).collection("payments").orderBy("createdAt", "desc").get();
+  ALL_LINKS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderLinks();
+  renderLimitBar();
+}
+function renderLinks() {
+  const container = document.getElementById("links-container");
+  if (ALL_LINKS.length === 0) { container.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg><h3>Sin links todavia</h3><p>Crea tu primer link de pago</p></div>`; return; }
+  container.innerHTML = ALL_LINKS.map(link => {
+    const url = buildPaymentURL(UID, link.id);
+    const active = link.active !== false;
+    return `<div class="link-card"><div class="link-card-icon"><svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg></div><div class="link-card-body"><div class="link-card-title">${escapeHtml(link.descripcion || "Sin descripcion")}</div><div class="link-card-meta"><span class="link-amount">${formatMoney(link.monto)}</span><span class="badge ${active ? "green" : "gray"}"><span class="badge-dot"></span>${active ? "Activo" : "Inactivo"}</span><span style="color:var(--muted-2);font-size:11px">${shortDate(link.createdAt)}</span></div><div class="link-card-url">${url}</div></div><div class="link-card-actions"><button class="btn-icon" title="Ver link" onclick="viewLink('${link.id}')">Ver</button><button class="btn-icon" title="Copiar URL" onclick="copyToClipboard('${url}')">Copiar</button><button class="btn-icon" title="${active ? "Desactivar" : "Activar"}" onclick="toggleLink('${link.id}', ${active})">${active ? "Off" : "On"}</button></div></div>`;
+  }).join("");
+}
+function renderLimitBar() {
+  const activeCount = ALL_LINKS.filter(l => l.active !== false).length;
+  const plan = getPlanMeta(USER_PROFILE.plan);
+  const pct = Math.min(100, (activeCount / plan.maxLinks) * 100);
+  const fillClass = pct >= 100 ? "full" : pct >= 80 ? "warn" : "";
+  const expired = isPlanExpired(USER_PROFILE);
+  document.getElementById("limit-bar-container").innerHTML = `<div class="limit-bar-wrap"><div class="limit-bar-top"><span style="font-weight:600;font-size:13px">${activeCount} de ${plan.maxLinks} links activos</span><span>${plan.name}${expired ? " vencido" : ""}</span></div><div class="limit-bar"><div class="limit-bar-fill ${fillClass}" style="width:${pct}%"></div></div>${expired ? `<div style="font-size:12px;color:var(--red);margin-top:6px">Plan vencido. Contacta al administrador para reactivarlo.</div>` : ""}</div>`;
+}
+async function createLink() {
+  const desc = document.getElementById("nl-desc").value.trim();
+  const monto = parseFloat(document.getElementById("nl-monto").value) || 0;
+  if (!desc || !monto) { showToast("Completa descripcion y monto", "error"); return; }
+  if (!USER_CONFIG.cbu) { showToast("Primero configura tu CBU en Mi cuenta", "error"); return; }
+  const limit = await checkLinkLimit(DB, UID, USER_PROFILE);
+  if (!limit.ok) { showToast(limit.reason === "expired" ? "Tu plan esta vencido" : `Limite de ${limit.max} links alcanzado`, "error"); return; }
+  const ref = await DB.collection("users").doc(UID).collection("payments").add({ descripcion: desc, monto, active: true, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+  closeModal("modal-new-link");
+  document.getElementById("nl-desc").value = "";
+  document.getElementById("nl-monto").value = "";
+  document.getElementById("nl-preview").style.display = "none";
+  showToast("Link creado correctamente", "success");
+  await loadLinks(); updateStats(); viewLink(ref.id);
+}
+function updateNewLinkPreview() { const v = parseFloat(document.getElementById("nl-monto").value) || 0; document.getElementById("nl-preview").style.display = v > 0 ? "block" : "none"; document.getElementById("nl-preview-monto").textContent = formatMoney(v); }
+function viewLink(id) { CURRENT_LINK = ALL_LINKS.find(l => l.id === id); if (!CURRENT_LINK) return; const url = buildPaymentURL(UID, id); document.getElementById("vl-title").textContent = CURRENT_LINK.descripcion || "Mi link"; document.getElementById("vl-url").textContent = url; document.getElementById("vl-url-input").value = url; document.getElementById("vl-qr").src = getQRUrl(url, 180); openModal("modal-view-link"); }
+function copyLinkURL() { copyToClipboard(document.getElementById("vl-url-input").value); }
+function copyWhatsAppMsg() { if (!CURRENT_LINK) return; const url = buildPaymentURL(UID, CURRENT_LINK.id); copyToClipboard(`Hola! Te paso el link para realizar el pago de *${CURRENT_LINK.descripcion}* por ${formatMoney(CURRENT_LINK.monto)}:\n\n${url}\n\nCuando pagues, enviame el comprobante desde esa pagina. Gracias!`); }
+async function toggleLink(id, currentActive) { await DB.collection("users").doc(UID).collection("payments").doc(id).update({ active: !currentActive }); showToast(currentActive ? "Link desactivado" : "Link activado", "info"); await loadLinks(); updateStats(); }
+
+async function loadOrders() { const snap = await DB.collection("users").doc(UID).collection("orders").orderBy("fecha", "desc").get(); ALL_ORDERS = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderOrders(ALL_ORDERS); renderRecentOrders(); }
+function renderOrders(orders) {
+  const tb = document.getElementById("orders-table");
+  if (orders.length === 0) { tb.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted-2)">Sin registros de pago todavia</td></tr>`; return; }
+  tb.innerHTML = orders.map(o => `<tr><td><div style="font-weight:600">${escapeHtml(o.nombre || "-")}</div></td><td class="td-mono">${escapeHtml(o.dni || "-")}</td><td><strong>${formatMoney(o.monto)}</strong></td><td class="td-muted">${escapeHtml(o.paymentDesc || (o.paymentId || "").slice(0, 8) || "-")}</td><td class="td-muted">${formatDate(o.fecha)}</td><td>${o.comprobanteURL ? `<a href="${o.comprobanteURL}" target="_blank" class="comprobante-link">Ver</a>` : "-"}</td><td><select class="status-select" onchange="updateOrderStatus('${o.id}', this.value)"><option value="pendiente" ${o.estado === "pendiente" ? "selected" : ""}>Pendiente</option><option value="confirmado" ${o.estado === "confirmado" ? "selected" : ""}>Confirmado</option><option value="rechazado" ${o.estado === "rechazado" ? "selected" : ""}>Rechazado</option></select></td></tr>`).join("");
+}
+function renderRecentOrders() { const tb = document.getElementById("recent-orders"); const recent = ALL_ORDERS.slice(0, 5); if (recent.length === 0) { tb.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted-2)">Sin pagos todavia</td></tr>`; return; } tb.innerHTML = recent.map(o => { const badge = o.estado === "confirmado" ? "green" : o.estado === "rechazado" ? "red" : "yellow"; return `<tr><td><strong>${escapeHtml(o.nombre || "-")}</strong></td><td>${formatMoney(o.monto)}</td><td class="td-muted">${shortDate(o.fecha)}</td><td><span class="badge ${badge}">${o.estado || "pendiente"}</span></td></tr>`; }).join(""); }
+async function updateOrderStatus(orderId, status) { await DB.collection("users").doc(UID).collection("orders").doc(orderId).update({ estado: status }); const o = ALL_ORDERS.find(x => x.id === orderId); if (o) o.estado = status; renderRecentOrders(); updateStats(); showToast("Estado actualizado", "success"); }
+function filterOrders() { const q = document.getElementById("filter-search").value.toLowerCase(); const s = document.getElementById("filter-status").value; renderOrders(ALL_ORDERS.filter(o => (!q || (o.nombre || "").toLowerCase().includes(q) || (o.dni || "").includes(q)) && (!s || o.estado === s))); }
+function exportCSV() { if (ALL_ORDERS.length === 0) { showToast("Sin datos para exportar", "info"); return; } const header = "Nombre,DNI,Monto,Estado,Fecha,Comprobante\n"; const rows = ALL_ORDERS.map(o => `"${o.nombre || ""}","${o.dni || ""}","${o.monto || 0}","${o.estado || ""}","${o.fecha ? (o.fecha.toDate ? o.fecha.toDate().toLocaleString("es-AR") : o.fecha) : ""}","${o.comprobanteURL || ""}"`).join("\n"); const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8;" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "pagos.csv"; a.click(); URL.revokeObjectURL(url); showToast("CSV exportado", "success"); }
+function updateStats() { const confirmed = ALL_ORDERS.filter(o => o.estado === "confirmado"); const pending = ALL_ORDERS.filter(o => o.estado !== "confirmado" && o.estado !== "rechazado"); const total = confirmed.reduce((s, o) => s + (o.monto || 0), 0); const activeLinks = ALL_LINKS.filter(l => l.active !== false).length; const plan = getPlanMeta(USER_PROFILE.plan); document.getElementById("stat-total").textContent = formatMoney(total); document.getElementById("stat-count").textContent = ALL_ORDERS.length; document.getElementById("stat-links").textContent = activeLinks; document.getElementById("stat-pending").textContent = pending.length; document.getElementById("stat-links-sub").textContent = `de ${plan.maxLinks} en ${plan.name}`; document.getElementById("cfg-plan-name").textContent = plan.name; document.getElementById("cfg-plan-sub").textContent = plan.description + (USER_PROFILE.plan === "trial" ? `, vence ${trialEndDate(USER_PROFILE.createdAt).toLocaleDateString("es-AR")}` : ""); document.getElementById("cfg-plan-badge").textContent = plan.name; document.getElementById("cfg-plan-badge").className = `plan-bar-badge ${USER_PROFILE.plan}`; }
+function fillConfigForm() { document.getElementById("cfg-negocio").value = USER_CONFIG.negocio || USER_PROFILE.negocio || ""; document.getElementById("cfg-titular").value = USER_CONFIG.titular || ""; document.getElementById("cfg-cbu").value = USER_CONFIG.cbu || ""; document.getElementById("cfg-alias").value = USER_CONFIG.alias || ""; document.getElementById("cfg-whatsapp").value = USER_CONFIG.whatsapp || ""; document.getElementById("cfg-logo").value = USER_CONFIG.logo || ""; updateBrandPreview(); }
+function updateBrandPreview() { const neg = document.getElementById("cfg-negocio").value.trim(); document.getElementById("brand-preview-el").style.display = neg ? "flex" : "none"; if (neg) { document.getElementById("bp-logo").textContent = neg.charAt(0).toUpperCase(); document.getElementById("bp-name").textContent = neg; } }
+async function saveConfig() { const cfg = { negocio: document.getElementById("cfg-negocio").value.trim(), titular: document.getElementById("cfg-titular").value.trim(), cbu: document.getElementById("cfg-cbu").value.trim(), alias: document.getElementById("cfg-alias").value.trim(), whatsapp: cleanWhatsApp(document.getElementById("cfg-whatsapp").value.trim()), logo: document.getElementById("cfg-logo").value.trim() }; if (!cfg.titular || !cfg.cbu || !cfg.alias || !cfg.whatsapp) { showToast("Completa todos los campos bancarios", "error"); return; } if (!/^\d{22}$/.test(cfg.cbu)) { showToast("El CBU debe tener 22 digitos", "error"); return; } await DB.collection("users").doc(UID).collection("config").doc("main").set(cfg, { merge: true }); await DB.collection("users").doc(UID).update({ negocio: cfg.negocio, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); USER_CONFIG = cfg; document.getElementById("tb-negocio").textContent = cfg.negocio || "Mi Negocio"; showToast("Configuracion guardada", "success"); }
+function showUpgradeModal() { openModal("modal-upgrade"); }
+function contactUpgrade() { const msg = encodeURIComponent(`Hola! Quiero cambiar mi plan de PagoSimple. Mi email es: ${AUTH.currentUser?.email || ""}`); window.open(`https://wa.me/5491100000000?text=${msg}`, "_blank"); }
+</script>
+</body>
+</html>
+
+
+

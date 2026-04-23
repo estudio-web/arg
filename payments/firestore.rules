@@ -1,0 +1,71 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function userDoc(userId) {
+      return get(/databases/$(database)/documents/users/$(userId));
+    }
+
+    function userIsActive(userId) {
+      return userDoc(userId).data.active != false;
+    }
+
+    function isSuperAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "superadmin"
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.active != false;
+    }
+
+    match /accountRequests/{requestId} {
+      allow create: if request.resource.data.email is string
+        && request.resource.data.estado == "pendiente";
+      allow read, update, delete: if isSuperAdmin();
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isSuperAdmin() || resource.data.active != false;
+      allow list: if isSuperAdmin();
+      allow create, delete: if isSuperAdmin();
+      allow update: if isOwner(userId) || isSuperAdmin();
+
+      match /config/{docId} {
+        allow get: if isOwner(userId) || isSuperAdmin() || userIsActive(userId);
+        allow list: if isOwner(userId) || isSuperAdmin();
+        allow write: if isOwner(userId) || isSuperAdmin();
+      }
+
+      match /payments/{paymentId} {
+        allow get: if isOwner(userId) || isSuperAdmin()
+          || (resource.data.active == true && userIsActive(userId));
+        allow list, create, update, delete: if isOwner(userId) || isSuperAdmin();
+      }
+
+      match /orders/{orderId} {
+        allow create: if userIsActive(userId)
+          && request.resource.data.estado == "pendiente"
+          && request.resource.data.nombre is string
+          && request.resource.data.dni is string
+          && request.resource.data.comprobanteURL is string;
+        allow read, update, delete: if isOwner(userId) || isSuperAdmin();
+      }
+
+      match /plan/{docId} {
+        allow read: if isOwner(userId) || isSuperAdmin();
+        allow write: if isSuperAdmin();
+      }
+    }
+
+    match /{path=**}/orders/{orderId} {
+      allow read: if isSuperAdmin();
+    }
+  }
+}

@@ -1,0 +1,188 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crear cuenta — PagoSimple</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  body { background: var(--sidebar-bg); }
+  .auth-left-brand .logo { font-family: var(--font-mono); font-size: 28px; font-weight: 700; color: var(--blue); margin-bottom: 8px; }
+  .auth-left-brand .logo span { color: rgba(255,255,255,0.5); font-weight: 400; }
+  .auth-left-brand h2 { font-size: 32px; font-weight: 800; color: white; margin-bottom: 12px; line-height: 1.2; }
+  .auth-left-brand p  { font-size: 15px; color: rgba(255,255,255,0.55); line-height: 1.6; max-width: 380px; }
+  .plan-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .plan-opt {
+    border: 1.5px solid var(--border); border-radius: var(--radius);
+    padding: 14px 12px; cursor: pointer; transition: all 0.15s; text-align: center;
+    background: white;
+  }
+  .plan-opt:hover { border-color: var(--blue); }
+  .plan-opt.selected { border-color: var(--blue); background: var(--blue-light); }
+  .plan-opt-name { font-size: 13px; font-weight: 800; color: var(--text); }
+  .plan-opt-price { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .plan-opt-badge { display: inline-block; font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 4px; margin-top: 4px; }
+  .plan-opt-badge.free { background: var(--bg); color: var(--muted); }
+  .plan-opt-badge.pro  { background: var(--yellow); color: #7c4a00; }
+  #error-msg { font-size: 12px; color: var(--red); margin-top: 6px; display: none; }
+  .terms { font-size: 11px; color: var(--muted); text-align: center; margin-top: 12px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 520px) {
+    .form-row,
+    .plan-selector { grid-template-columns: 1fr; }
+    .auth-box h2 { font-size: 21px; }
+  }
+</style>
+</head>
+<body>
+<div class="auth-screen">
+  <div class="auth-left">
+    <div class="auth-left-content">
+      <div class="auth-left-brand">
+        <div class="logo">pago<span>simple</span></div>
+        <h2>Empezá a cobrar hoy</h2>
+        <p>Creá tu cuenta y en minutos tenés tu primer link de pago listo para compartir.</p>
+        <div style="margin-top:32px; background:rgba(0,149,217,0.1); border:1px solid rgba(0,149,217,0.2); border-radius:12px; padding:20px;">
+          <p style="font-size:13px; color:rgba(255,255,255,0.6); margin-bottom:4px">Plan TRIAL incluye:</p>
+          <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
+            <div style="font-size:13px; color:rgba(255,255,255,0.8)">✅ Hasta 1 link de pago</div>
+            <div style="font-size:13px; color:rgba(255,255,255,0.8)">✅ Envío por WhatsApp</div>
+            <div style="font-size:13px; color:rgba(255,255,255,0.8)">✅ Panel de control</div>
+            <div style="font-size:13px; color:rgba(255,255,255,0.8)">✅ 0% comisiones</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-right">
+    <div class="auth-box">
+      <div class="auth-logo">pago<span>simple</span></div>
+      <h2>Solicitar cuenta</h2>
+      <p class="auth-sub">Completá los datos para comenzar</p>
+
+      <div class="form-row" style="margin-bottom:16px">
+        <div class="form-group">
+          <label class="form-label">Nombre</label>
+          <input type="text" id="inp-nombre" class="form-input" placeholder="Juan">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Apellido</label>
+          <input type="text" id="inp-apellido" class="form-input" placeholder="García">
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:16px">
+        <label class="form-label">Nombre de tu negocio</label>
+        <input type="text" id="inp-negocio" class="form-input" placeholder="Mi Tienda Online">
+      </div>
+
+      <div class="form-group" style="margin-bottom:16px">
+        <label class="form-label">Email</label>
+        <input type="email" id="inp-email" class="form-input" placeholder="tu@email.com" autocomplete="email">
+      </div>
+
+      <div class="form-group" style="margin-bottom:16px">
+        <label class="form-label">Contraseña</label>
+        <input type="password" id="inp-password" class="form-input" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+      </div>
+
+      <div style="margin-bottom:16px">
+        <label class="form-label" style="margin-bottom:8px;display:block">Plan solicitado</label>
+        <div class="plan-selector">
+          <div class="plan-opt selected" id="plan-free" onclick="selectPlan('free')">
+            <div class="plan-opt-name">TRIAL</div>
+            <div class="plan-opt-price">14 dias</div>
+            <div class="plan-opt-badge free">1 link</div>
+          </div>
+          <div class="plan-opt" id="plan-pro" onclick="selectPlan('pro')">
+            <div class="plan-opt-name">PLAN 2</div>
+            <div class="plan-opt-price">$25.000/mes</div>
+            <div class="plan-opt-badge pro">⭐ PLAN 2</div>
+          </div>
+        </div>
+      </div>
+
+      <p id="error-msg"></p>
+
+      <button class="btn btn-primary btn-full btn-lg" id="btn-register" onclick="doRegister()">
+        <span id="btn-text">Solicitar cuenta</span>
+        <div class="spinner" id="btn-spinner" style="display:none"></div>
+      </button>
+
+      <p class="terms">Al registrarte aceptás los términos de uso del servicio</p>
+
+      <div class="login-link" style="font-size:13px; color:var(--muted); text-align:center; margin-top:14px">
+        ¿Ya tenés cuenta? <a href="login.html" style="color:var(--blue); font-weight:600">Iniciar sesión</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="global-toast">
+  <div class="toast-icon success"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+  <span id="toast-text"></span>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="app.js"></script>
+<script>
+  let selectedPlan = "trial";
+  const { db } = initFirebase();
+
+  function selectPlan(plan) {
+    selectedPlan = plan === "pro" ? "plan2" : plan;
+    document.getElementById("plan-free").classList.toggle("selected", selectedPlan === "trial");
+    document.getElementById("plan-pro").classList.toggle("selected", selectedPlan === "plan2");
+  }
+
+  async function doRegister() {
+    const nombre = document.getElementById("inp-nombre").value.trim();
+    const apellido = document.getElementById("inp-apellido").value.trim();
+    const negocio = document.getElementById("inp-negocio").value.trim();
+    const email = document.getElementById("inp-email").value.trim();
+    const password = document.getElementById("inp-password").value;
+    const errEl = document.getElementById("error-msg");
+    const btn = document.getElementById("btn-register");
+    const spinner = document.getElementById("btn-spinner");
+    const btnText = document.getElementById("btn-text");
+
+    errEl.style.display = "none";
+    if (!nombre || !apellido || !negocio || !email) { errEl.textContent = "Completa nombre, negocio y email"; errEl.style.display = "block"; return; }
+
+    btn.disabled = true;
+    spinner.style.display = "block";
+    btnText.textContent = "Enviando solicitud...";
+
+    try {
+      await db.collection("accountRequests").add({
+        nombre,
+        apellido,
+        negocio,
+        email,
+        planSolicitado: selectedPlan,
+        estado: "pendiente",
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        nota: "Solicitud creada desde landing. El superadmin debe aprobar y crear el usuario."
+      });
+      showToast("Solicitud enviada. Te contactaremos para activar la cuenta.", "success");
+      document.getElementById("inp-nombre").value = "";
+      document.getElementById("inp-apellido").value = "";
+      document.getElementById("inp-negocio").value = "";
+      document.getElementById("inp-email").value = "";
+      document.getElementById("inp-password").value = "";
+    } catch (e) {
+      errEl.textContent = "No se pudo enviar la solicitud. Intenta nuevamente.";
+      errEl.style.display = "block";
+    } finally {
+      btn.disabled = false;
+      spinner.style.display = "none";
+      btnText.textContent = "Solicitar cuenta";
+    }
+  }
+</script>
+</body>
+</html>
+

@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Superadmin - PagoSimple</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .admin-shell { max-width: 1280px; margin: 0 auto; }
+  .admin-toolbar { display:flex; gap:10px; align-items:center; justify-content:space-between; margin-bottom:16px; }
+  .admin-toolbar-left { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .admin-grid { display:grid; grid-template-columns: minmax(0, 1.15fr) minmax(340px, .85fr); gap:18px; align-items:start; }
+  .metric-row { display:grid; grid-template-columns: repeat(6,1fr); gap:12px; margin-bottom:18px; }
+  .mini-stat { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:16px; box-shadow:var(--shadow-sm); }
+  .mini-stat strong { display:block; font-size:23px; line-height:1.05; margin-top:6px; word-break:break-word; }
+  .mini-stat span { display:block; }
+  .inline-form { display:grid; grid-template-columns: repeat(2,1fr); gap:12px; }
+  .inline-form .full { grid-column:1/-1; }
+  .admin-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  .admin-filters { display:grid; grid-template-columns: 1fr 150px 150px; gap:10px; margin-bottom:14px; }
+  .tenant-list { display:flex; flex-direction:column; gap:10px; }
+  .tenant-card { border:1.5px solid var(--border); border-radius:var(--radius); background:var(--surface); padding:14px; cursor:pointer; transition:border-color .15s, box-shadow .15s; }
+  .tenant-card:hover, .tenant-card.active { border-color:var(--blue); box-shadow:0 0 0 3px rgba(0,149,217,.08); }
+  .tenant-head { display:flex; gap:10px; align-items:flex-start; justify-content:space-between; }
+  .tenant-name { font-weight:800; font-size:14px; }
+  .tenant-email { color:var(--muted); font-size:12px; margin-top:2px; word-break:break-all; }
+  .tenant-stats { display:grid; grid-template-columns: repeat(4,1fr); gap:8px; margin-top:12px; }
+  .tenant-stat { background:var(--surface-2); border-radius:8px; padding:8px; }
+  .tenant-stat span { display:block; font-size:10px; color:var(--muted); text-transform:uppercase; font-weight:800; }
+  .tenant-stat strong { display:block; font-size:13px; margin-top:2px; }
+  .detail-empty { padding:30px 18px; text-align:center; color:var(--muted); }
+  .detail-grid { display:grid; grid-template-columns: repeat(2,1fr); gap:10px; margin-bottom:14px; }
+  .detail-item { background:var(--surface-2); border-radius:8px; padding:10px; }
+  .detail-item span { display:block; font-size:10px; color:var(--muted); font-weight:800; text-transform:uppercase; }
+  .detail-item strong { display:block; font-size:14px; margin-top:3px; word-break:break-word; }
+  .mobile-card-list { display:none; }
+  .request-card, .order-card { border:1px solid var(--border); border-radius:var(--radius); padding:12px; background:var(--surface); margin-bottom:10px; }
+  .request-card strong, .order-card strong { display:block; font-size:13px; }
+  .request-card span, .order-card span { display:block; color:var(--muted); font-size:12px; margin-top:2px; word-break:break-word; }
+
+  @media (max-width:1100px){
+    .metric-row{grid-template-columns:repeat(3,1fr)}
+    .admin-grid{grid-template-columns:1fr}
+  }
+  @media (max-width:768px){
+    .admin-shell{max-width:none}
+    .admin-toolbar{display:grid;grid-template-columns:1fr;gap:12px}
+    .admin-toolbar-left{display:grid;grid-template-columns:1fr;gap:8px}
+    .admin-toolbar .btn{width:100%}
+    .metric-row{grid-template-columns:repeat(2,1fr);gap:10px}
+    .mini-stat{padding:14px;border-radius:12px}
+    .mini-stat strong{font-size:20px}
+    .admin-filters{grid-template-columns:1fr}
+    .inline-form{grid-template-columns:1fr}
+    .tenant-stats{grid-template-columns:repeat(2,1fr)}
+    .detail-grid{grid-template-columns:1fr}
+    .admin-actions{display:grid;grid-template-columns:1fr 1fr}
+    .admin-actions .btn{width:100%;padding-left:8px;padding-right:8px}
+    .desktop-table{display:none}
+    .mobile-card-list{display:block}
+  }
+  @media (max-width:430px){
+    .metric-row{grid-template-columns:1fr}
+    .tenant-head{display:grid;grid-template-columns:1fr;gap:8px}
+    .tenant-stats{grid-template-columns:1fr}
+    .admin-actions{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-logo">pago<span>simple</span></div>
+  <div class="topbar-sep"></div>
+  <div class="topbar-title">Superadmin</div>
+  <div class="topbar-right">
+    <div class="topbar-user" id="admin-email"></div>
+    <button class="btn btn-secondary btn-sm" onclick="doLogout()">Salir</button>
+  </div>
+</div>
+
+<main class="main">
+  <div class="admin-shell">
+    <div class="page-header">
+      <h1>Control global</h1>
+      <p>Usuarios, solicitudes, planes, links y pagos de toda la plataforma.</p>
+    </div>
+
+    <div class="admin-toolbar">
+      <div class="admin-toolbar-left">
+        <button class="btn btn-primary" onclick="refreshAll()">Actualizar datos</button>
+        <button class="btn btn-secondary" onclick="exportGlobalCSV()">Exportar ordenes</button>
+      </div>
+      <span class="td-muted" id="last-sync">Sin sincronizar</span>
+    </div>
+
+    <div class="metric-row">
+      <div class="mini-stat"><span class="stat-label">Usuarios</span><strong id="m-users">0</strong></div>
+      <div class="mini-stat"><span class="stat-label">Activos</span><strong id="m-active">0</strong></div>
+      <div class="mini-stat"><span class="stat-label">Links</span><strong id="m-links">0</strong></div>
+      <div class="mini-stat"><span class="stat-label">Ordenes</span><strong id="m-orders">0</strong></div>
+      <div class="mini-stat"><span class="stat-label">Confirmado</span><strong id="m-total">$0</strong></div>
+      <div class="mini-stat"><span class="stat-label">Pendientes</span><strong id="m-pending">0</strong></div>
+    </div>
+
+    <div class="admin-grid">
+      <section>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-header-icon"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
+            <div><h2>Crear usuario</h2><p>Alta manual aprobada por superadmin</p></div>
+          </div>
+          <div class="card-body">
+            <div class="inline-form">
+              <div class="form-group"><label class="form-label">Nombre</label><input id="cu-nombre" class="form-input"></div>
+              <div class="form-group"><label class="form-label">Apellido</label><input id="cu-apellido" class="form-input"></div>
+              <div class="form-group full"><label class="form-label">Negocio</label><input id="cu-negocio" class="form-input"></div>
+              <div class="form-group"><label class="form-label">Email</label><input id="cu-email" type="email" class="form-input"></div>
+              <div class="form-group"><label class="form-label">Password temporal</label><input id="cu-pass" type="password" class="form-input"></div>
+              <div class="form-group"><label class="form-label">Plan</label><select id="cu-plan" class="form-select"><option value="trial">TRIAL</option><option value="plan1">PLAN 1</option><option value="plan2">PLAN 2</option></select></div>
+              <div class="form-group"><label class="form-label">Estado</label><select id="cu-active" class="form-select"><option value="true">Activo</option><option value="false">Inactivo</option></select></div>
+            </div>
+            <button class="btn btn-primary" style="margin-top:16px" onclick="createUser()">Crear usuario</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div><h2>Usuarios</h2><p>Selecciona un tenant para ver sus estadisticas y herramientas.</p></div>
+          </div>
+          <div class="card-body">
+            <div class="admin-filters">
+              <input id="filter-user" class="form-input" placeholder="Buscar negocio o email" oninput="renderUsers()">
+              <select id="filter-plan" class="form-select" onchange="renderUsers()">
+                <option value="">Todos los planes</option>
+                <option value="trial">TRIAL</option>
+                <option value="plan1">PLAN 1</option>
+                <option value="plan2">PLAN 2</option>
+              </select>
+              <select id="filter-active" class="form-select" onchange="renderUsers()">
+                <option value="">Todos</option>
+                <option value="active">Activos</option>
+                <option value="inactive">Inactivos</option>
+              </select>
+            </div>
+            <div id="users-list" class="tenant-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <aside>
+        <div class="card">
+          <div class="card-header"><div><h2>Detalle del usuario</h2><p>Resumen, accesos y acciones rapidas.</p></div></div>
+          <div class="card-body" id="tenant-detail">
+            <div class="detail-empty">Selecciona un usuario para ver su actividad.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div><h2>Solicitudes</h2><p>Cuentas pedidas desde la landing.</p></div></div>
+          <div class="table-wrap desktop-table"><table><thead><tr><th>Negocio</th><th>Email</th><th>Plan</th><th>Accion</th></tr></thead><tbody id="requests-table"></tbody></table></div>
+          <div class="card-body mobile-card-list" id="requests-mobile"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div><h2>Actividad global</h2><p>Ultimas ordenes registradas.</p></div></div>
+          <div class="table-wrap desktop-table"><table><thead><tr><th>Tenant</th><th>Cliente</th><th>Monto</th><th>Estado</th><th>Fecha</th></tr></thead><tbody id="orders-table"></tbody></table></div>
+          <div class="card-body mobile-card-list" id="orders-mobile"></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="global-toast"><div class="toast-icon success"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div><span id="toast-text"></span></div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="app.js"></script>
+<script>
+let AUTH, DB, USERS = [], REQUESTS = [], ORDERS = [], SELECTED_UID = "", CURRENT_REQUEST_ID = "";
+
+init();
+function init() {
+  const fb = initFirebase();
+  AUTH = fb.auth;
+  DB = fb.db;
+  AUTH.onAuthStateChanged(async user => {
+    if (!user) { window.location.href = "login.html"; return; }
+    const ok = await requireSuperAdmin(DB, user);
+    if (!ok) { window.location.href = "dashboard.html"; return; }
+    document.getElementById("admin-email").textContent = user.email || "";
+    await refreshAll();
+  });
+}
+
+async function refreshAll() {
+  showToast("Actualizando datos...", "info");
+  await loadUsers();
+  await Promise.all([loadRequests(), loadTenantData()]);
+  renderUsers();
+  renderRequests();
+  renderOrders();
+  updateMetrics();
+  if (SELECTED_UID) renderTenantDetail(SELECTED_UID);
+  document.getElementById("last-sync").textContent = "Actualizado " + new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+}
+
+async function createUser() {
+  const nombre = document.getElementById("cu-nombre").value.trim();
+  const apellido = document.getElementById("cu-apellido").value.trim();
+  const negocio = document.getElementById("cu-negocio").value.trim();
+  const email = document.getElementById("cu-email").value.trim();
+  const password = document.getElementById("cu-pass").value;
+  const plan = document.getElementById("cu-plan").value;
+  const active = document.getElementById("cu-active").value === "true";
+  if (!nombre || !negocio || !email || password.length < 6) {
+    showToast("Completa datos y password minimo 6 caracteres", "error");
+    return;
+  }
+
+  const secondary = initFirebase("tenantCreator-" + Date.now()).app;
+  try {
+    const cred = await secondary.auth().createUserWithEmailAndPassword(email, password);
+    const uid = cred.user.uid;
+    await DB.collection("users").doc(uid).set({
+      nombre, apellido, negocio, email, plan, active,
+      role: "tenant",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdBy: AUTH.currentUser.uid
+    });
+    await DB.collection("users").doc(uid).collection("plan").doc("current").set({
+      plan, active,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: AUTH.currentUser.uid
+    });
+    await DB.collection("users").doc(uid).collection("config").doc("main").set({ negocio, titular: "", cbu: "", alias: "", whatsapp: "", logo: "" });
+    if (CURRENT_REQUEST_ID) {
+      await DB.collection("accountRequests").doc(CURRENT_REQUEST_ID).update({
+        estado: "aprobada",
+        userId: uid,
+        approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        approvedBy: AUTH.currentUser.uid
+      });
+      CURRENT_REQUEST_ID = "";
+    }
+    await secondary.auth().signOut();
+    await secondary.delete();
+    clearCreateForm();
+    await refreshAll();
+    showToast("Usuario creado", "success");
+  } catch (e) {
+    showToast(e.message || "No se pudo crear el usuario", "error");
+  }
+}
+
+function clearCreateForm() {
+  ["cu-nombre", "cu-apellido", "cu-negocio", "cu-email", "cu-pass"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("cu-plan").value = "trial";
+  document.getElementById("cu-active").value = "true";
+}
+
+async function loadUsers() {
+  const snap = await DB.collection("users").get();
+  USERS = snap.docs
+    .map(d => ({ id: d.id, links: [], orders: [], stats: emptyStats(), ...d.data() }))
+    .filter(u => u.role !== "superadmin")
+    .sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt));
+}
+
+function emptyStats() {
+  return { links: 0, activeLinks: 0, orders: 0, confirmed: 0, pending: 0, rejected: 0, total: 0 };
+}
+
+async function loadTenantData() {
+  ORDERS = [];
+  await Promise.all(USERS.map(async user => {
+    try {
+      const [linksSnap, ordersSnap] = await Promise.all([
+        DB.collection("users").doc(user.id).collection("payments").get(),
+        DB.collection("users").doc(user.id).collection("orders").get()
+      ]);
+
+      user.links = linksSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt));
+      user.orders = ordersSnap.docs.map(d => ({ id: d.id, tenantId: user.id, tenantName: user.negocio || user.email || user.id, ...d.data() })).sort((a, b) => toMillis(b.fecha) - toMillis(a.fecha));
+      user.stats = buildStats(user.links, user.orders);
+      ORDERS.push(...user.orders);
+    } catch (e) {
+      user.loadError = e.message || "No se pudo leer actividad";
+      user.links = [];
+      user.orders = [];
+      user.stats = emptyStats();
+    }
+  }));
+  ORDERS.sort((a, b) => toMillis(b.fecha) - toMillis(a.fecha));
+}
+
+function buildStats(links, orders) {
+  const confirmed = orders.filter(o => o.estado === "confirmado");
+  return {
+    links: links.length,
+    activeLinks: links.filter(l => l.active !== false).length,
+    orders: orders.length,
+    confirmed: confirmed.length,
+    pending: orders.filter(o => !o.estado || o.estado === "pendiente").length,
+    rejected: orders.filter(o => o.estado === "rechazado").length,
+    total: confirmed.reduce((sum, o) => sum + (Number(o.monto) || 0), 0)
+  };
+}
+
+function toMillis(ts) {
+  if (!ts) return 0;
+  if (ts.toDate) return ts.toDate().getTime();
+  return new Date(ts).getTime() || 0;
+}
+
+async function loadRequests() {
+  const snap = await DB.collection("accountRequests").orderBy("createdAt", "desc").limit(50).get();
+  REQUESTS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+function renderUsers() {
+  const q = document.getElementById("filter-user").value.toLowerCase();
+  const planFilter = document.getElementById("filter-plan").value;
+  const activeFilter = document.getElementById("filter-active").value;
+  const filtered = USERS.filter(u => {
+    const plan = normalizePlan(u);
+    const matchQ = !q || (u.negocio || "").toLowerCase().includes(q) || (u.email || "").toLowerCase().includes(q);
+    const matchPlan = !planFilter || plan === planFilter;
+    const matchActive = !activeFilter || (activeFilter === "active" ? u.active !== false : u.active === false);
+    return matchQ && matchPlan && matchActive;
+  });
+
+  document.getElementById("users-list").innerHTML = filtered.map(u => {
+    const plan = getPlanMeta(normalizePlan(u));
+    const active = u.active !== false;
+    return `<article class="tenant-card ${SELECTED_UID === u.id ? "active" : ""}" onclick="renderTenantDetail('${u.id}')">
+      <div class="tenant-head">
+        <div>
+          <div class="tenant-name">${escapeHtml(u.negocio || "-")}</div>
+          <div class="tenant-email">${escapeHtml(u.email || "")}</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+          <span class="badge blue">${plan.name}</span>
+          <span class="badge ${active ? "green" : "red"}">${active ? "Activo" : "Inactivo"}</span>
+        </div>
+      </div>
+      <div class="tenant-stats">
+        <div class="tenant-stat"><span>Recaudado</span><strong>${formatMoney(u.stats.total)}</strong></div>
+        <div class="tenant-stat"><span>Ordenes</span><strong>${u.stats.orders}</strong></div>
+        <div class="tenant-stat"><span>Pendientes</span><strong>${u.stats.pending}</strong></div>
+        <div class="tenant-stat"><span>Links</span><strong>${u.stats.activeLinks}/${plan.maxLinks}</strong></div>
+      </div>
+      ${u.loadError ? `<div style="color:var(--red);font-size:12px;margin-top:10px">${escapeHtml(u.loadError)}</div>` : ""}
+    </article>`;
+  }).join("") || `<div class="detail-empty">No hay usuarios con esos filtros.</div>`;
+}
+
+function renderTenantDetail(uid) {
+  SELECTED_UID = uid;
+  renderUsers();
+  const u = USERS.find(user => user.id === uid);
+  if (!u) return;
+  const plan = getPlanMeta(normalizePlan(u));
+  const urlBase = buildPaymentURL(uid, "LINK_ID").replace("LINK_ID", "");
+  const latestOrders = u.orders.slice(0, 5);
+
+  document.getElementById("tenant-detail").innerHTML = `
+    <div class="detail-grid">
+      <div class="detail-item"><span>Negocio</span><strong>${escapeHtml(u.negocio || "-")}</strong></div>
+      <div class="detail-item"><span>Email</span><strong>${escapeHtml(u.email || "-")}</strong></div>
+      <div class="detail-item"><span>Plan</span><strong>${plan.name}</strong></div>
+      <div class="detail-item"><span>Estado</span><strong>${u.active === false ? "Inactivo" : "Activo"}</strong></div>
+      <div class="detail-item"><span>Recaudado confirmado</span><strong>${formatMoney(u.stats.total)}</strong></div>
+      <div class="detail-item"><span>Ordenes / links</span><strong>${u.stats.orders} / ${u.stats.activeLinks}</strong></div>
+    </div>
+    <div class="admin-actions" style="margin-bottom:14px">
+      <button class="btn btn-secondary btn-sm" onclick="toggleUser('${u.id}', ${u.active !== false})">${u.active === false ? "Activar" : "Desactivar"}</button>
+      <button class="btn btn-secondary btn-sm" onclick="changePlan('${u.id}')">Cambiar plan</button>
+      <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${urlBase}')">Copiar base links</button>
+      <button class="btn btn-secondary btn-sm" onclick="exportTenantCSV('${u.id}')">Exportar pagos</button>
+    </div>
+    <div class="card" style="box-shadow:none;border:1px solid var(--border);margin-bottom:0">
+      <div class="card-header"><div><h2>Ultimos pagos</h2><p>${latestOrders.length ? "Actividad reciente del tenant" : "Sin pagos registrados"}</p></div></div>
+      <div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Monto</th><th>Estado</th><th>Fecha</th></tr></thead><tbody>
+        ${latestOrders.map(o => `<tr><td>${escapeHtml(o.nombre || "-")}</td><td>${formatMoney(o.monto)}</td><td>${o.estado || "pendiente"}</td><td class="td-muted">${shortDate(o.fecha)}</td></tr>`).join("") || `<tr><td colspan="4" class="td-muted" style="text-align:center;padding:20px">Sin ordenes</td></tr>`}
+      </tbody></table></div>
+    </div>`;
+}
+
+function renderRequests() {
+  const rows = REQUESTS.map(r => {
+    const plan = getPlanMeta(normalizePlan({ plan: r.planSolicitado }));
+    return `<tr><td><strong>${escapeHtml(r.negocio || "-")}</strong><div class="td-muted">${escapeHtml((r.nombre || "") + " " + (r.apellido || ""))}</div></td><td>${escapeHtml(r.email || "")}</td><td>${plan.name}</td><td><button class="btn btn-secondary btn-sm" onclick="useRequest('${r.id}')">Usar</button></td></tr>`;
+  }).join("") || `<tr><td colspan="4" class="td-muted" style="text-align:center;padding:24px">Sin solicitudes</td></tr>`;
+  document.getElementById("requests-table").innerHTML = rows;
+  document.getElementById("requests-mobile").innerHTML = REQUESTS.map(r => {
+    const plan = getPlanMeta(normalizePlan({ plan: r.planSolicitado }));
+    return `<div class="request-card"><strong>${escapeHtml(r.negocio || "-")}</strong><span>${escapeHtml(r.email || "")}</span><span>${plan.name} · ${r.estado || "pendiente"}</span><button class="btn btn-secondary btn-sm btn-full" style="margin-top:10px" onclick="useRequest('${r.id}')">Usar solicitud</button></div>`;
+  }).join("") || `<div class="detail-empty">Sin solicitudes</div>`;
+}
+
+function useRequest(id) {
+  const r = REQUESTS.find(x => x.id === id);
+  if (!r) return;
+  document.getElementById("cu-nombre").value = r.nombre || "";
+  document.getElementById("cu-apellido").value = r.apellido || "";
+  document.getElementById("cu-negocio").value = r.negocio || "";
+  document.getElementById("cu-email").value = r.email || "";
+  document.getElementById("cu-plan").value = normalizePlan({ plan: r.planSolicitado });
+  CURRENT_REQUEST_ID = r.id;
+  showToast("Solicitud cargada en el formulario", "info");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function renderOrders() {
+  const latest = ORDERS.slice(0, 20);
+  document.getElementById("orders-table").innerHTML = latest.map(o => `<tr><td>${escapeHtml(o.tenantName || "-")}</td><td>${escapeHtml(o.nombre || "-")}</td><td>${formatMoney(o.monto)}</td><td>${o.estado || "pendiente"}</td><td class="td-muted">${shortDate(o.fecha)}</td></tr>`).join("") || `<tr><td colspan="5" class="td-muted" style="text-align:center;padding:24px">Sin actividad</td></tr>`;
+  document.getElementById("orders-mobile").innerHTML = latest.map(o => `<div class="order-card"><strong>${escapeHtml(o.nombre || "-")} · ${formatMoney(o.monto)}</strong><span>${escapeHtml(o.tenantName || "-")}</span><span>${o.estado || "pendiente"} · ${formatDate(o.fecha)}</span></div>`).join("") || `<div class="detail-empty">Sin actividad</div>`;
+}
+
+async function toggleUser(uid, active) {
+  await DB.collection("users").doc(uid).update({ active: !active, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+  await refreshAll();
+  showToast(active ? "Usuario desactivado" : "Usuario activado", "success");
+}
+
+async function changePlan(uid) {
+  const current = USERS.find(u => u.id === uid);
+  const next = prompt("Nuevo plan: trial, plan1 o plan2", normalizePlan(current));
+  if (!PLAN_IDS.includes(next)) return;
+  await DB.collection("users").doc(uid).update({ plan: next, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+  await DB.collection("users").doc(uid).collection("plan").doc("current").set({
+    plan: next,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedBy: AUTH.currentUser.uid
+  }, { merge: true });
+  await refreshAll();
+  showToast("Plan actualizado", "success");
+}
+
+function updateMetrics() {
+  const total = USERS.reduce((sum, u) => sum + u.stats.total, 0);
+  document.getElementById("m-users").textContent = USERS.length;
+  document.getElementById("m-active").textContent = USERS.filter(u => u.active !== false).length;
+  document.getElementById("m-links").textContent = USERS.reduce((sum, u) => sum + u.stats.activeLinks, 0);
+  document.getElementById("m-orders").textContent = ORDERS.length;
+  document.getElementById("m-total").textContent = formatMoney(total);
+  document.getElementById("m-pending").textContent = USERS.reduce((sum, u) => sum + u.stats.pending, 0);
+}
+
+function exportGlobalCSV() {
+  exportRows(ORDERS, "ordenes-global.csv");
+}
+
+function exportTenantCSV(uid) {
+  const user = USERS.find(u => u.id === uid);
+  if (!user) return;
+  exportRows(user.orders, `ordenes-${(user.negocio || user.id).replace(/\W+/g, "-").toLowerCase()}.csv`);
+}
+
+function exportRows(rows, filename) {
+  if (!rows.length) { showToast("Sin ordenes para exportar", "info"); return; }
+  const header = "Tenant,Nombre,DNI,Monto,Estado,Fecha,Comprobante\n";
+  const body = rows.map(o => `"${o.tenantName || ""}","${o.nombre || ""}","${o.dni || ""}","${o.monto || 0}","${o.estado || ""}","${o.fecha ? (o.fecha.toDate ? o.fecha.toDate().toLocaleString("es-AR") : o.fecha) : ""}","${o.comprobanteURL || ""}"`).join("\n");
+  const blob = new Blob([header + body], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function doLogout() {
+  await AUTH.signOut();
+  window.location.href = "login.html";
+}
+</script>
+</body>
+</html>

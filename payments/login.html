@@ -1,0 +1,144 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iniciar sesión — PagoSimple</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  body { background: var(--sidebar-bg); }
+  .auth-left-brand .logo {
+    font-family: var(--font-mono);
+    font-size: 28px; font-weight: 700; color: var(--blue);
+    margin-bottom: 8px;
+  }
+  .auth-left-brand .logo span { color: rgba(255,255,255,0.5); font-weight: 400; }
+  .auth-left-brand h2 {
+    font-size: 32px; font-weight: 800; color: white; margin-bottom: 12px; line-height: 1.2;
+  }
+  .auth-left-brand p { font-size: 15px; color: rgba(255,255,255,0.55); line-height: 1.6; max-width: 380px; }
+  .feat-list { margin-top: 36px; display: flex; flex-direction: column; gap: 14px; }
+  .feat-item { display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,0.7); font-size: 14px; }
+  .feat-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); flex-shrink: 0; }
+
+  .auth-box h2 { font-size: 24px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+  .auth-sub { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+  .form-group { margin-bottom: 16px; }
+  .login-link { font-size: 13px; color: var(--muted); text-align: center; margin-top: 18px; }
+  .login-link a { color: var(--blue); font-weight: 600; }
+  #error-msg { font-size: 12px; color: var(--red); margin-top: 6px; display: none; }
+  .forgot { font-size: 12px; color: var(--blue); text-align: right; margin-top: 4px; display: block; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="auth-screen">
+  <div class="auth-left">
+    <div class="auth-left-content">
+      <div class="auth-left-brand">
+        <div class="logo">pago<span>simple</span></div>
+        <h2>Bienvenido de vuelta</h2>
+        <p>Ingresá a tu panel y gestioná todos tus cobros por transferencia.</p>
+        <div class="feat-list">
+          <div class="feat-item"><div class="feat-dot"></div>Links de pago personalizados</div>
+          <div class="feat-item"><div class="feat-dot"></div>Comprobantes por WhatsApp automático</div>
+          <div class="feat-item"><div class="feat-dot"></div>Panel de control en tiempo real</div>
+          <div class="feat-item"><div class="feat-dot"></div>0% de comisiones</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-right">
+    <div class="auth-box">
+      <div class="auth-logo">pago<span>simple</span></div>
+      <h2>Iniciá sesión</h2>
+      <p class="auth-sub">Ingresá con tu cuenta para continuar</p>
+
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="inp-email" class="form-input" placeholder="tu@email.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contraseña</label>
+        <input type="password" id="inp-password" class="form-input" placeholder="Tu contraseña" autocomplete="current-password"
+          onkeydown="if(event.key==='Enter') doLogin()">
+        <span class="forgot" onclick="forgotPassword()">¿Olvidaste tu contraseña?</span>
+      </div>
+
+      <p id="error-msg"></p>
+
+      <button class="btn btn-primary btn-full btn-lg" id="btn-login" onclick="doLogin()" style="margin-top:8px">
+        <span id="btn-login-text">Ingresar al panel</span>
+        <div class="spinner" id="btn-spinner" style="display:none"></div>
+      </button>
+
+      <div class="login-link">
+        ¿No tenés cuenta? <a href="register.html">Solicitar cuenta</a>
+      </div>
+      <div class="login-link" style="margin-top:8px">
+        <a href="landing.html">← Volver al inicio</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="global-toast">
+  <div class="toast-icon success"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+  <span id="toast-text"></span>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="app.js"></script>
+<script>
+  const AUTH = initFirebase().auth;
+
+  // Si ya logueado, redirigir
+  AUTH.onAuthStateChanged(user => {
+    if (user) window.location.href = 'dashboard.html';
+  });
+
+  async function doLogin() {
+    const email    = document.getElementById('inp-email').value.trim();
+    const password = document.getElementById('inp-password').value;
+    const errEl    = document.getElementById('error-msg');
+    const btn      = document.getElementById('btn-login');
+    const spinner  = document.getElementById('btn-spinner');
+    const btnText  = document.getElementById('btn-login-text');
+
+    errEl.style.display = 'none';
+    if (!email || !password) { errEl.textContent = 'Completá email y contraseña'; errEl.style.display = 'block'; return; }
+
+    btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = 'Ingresando...';
+
+    try {
+      await AUTH.signInWithEmailAndPassword(email, password);
+      window.location.href = 'dashboard.html';
+    } catch(e) {
+      const msgs = {
+        'auth/user-not-found':   'No existe una cuenta con ese email',
+        'auth/wrong-password':   'Contraseña incorrecta',
+        'auth/invalid-email':    'Email inválido',
+        'auth/too-many-requests':'Demasiados intentos. Intentá más tarde'
+      };
+      errEl.textContent = msgs[e.code] || e.message;
+      errEl.style.display = 'block';
+    } finally {
+      btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = 'Ingresar al panel';
+    }
+  }
+
+  async function forgotPassword() {
+    const email = document.getElementById('inp-email').value.trim();
+    if (!email) { showToast('Ingresá tu email primero', 'error'); return; }
+    try {
+      await AUTH.sendPasswordResetEmail(email);
+      showToast('Revisá tu email para resetear la contraseña', 'success');
+    } catch(e) {
+      showToast('No se pudo enviar el email', 'error');
+    }
+  }
+</script>
+</body>
+</html>
+
