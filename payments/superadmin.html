@@ -392,7 +392,7 @@ function renderUsers() {
         <div class="tenant-stat"><span>Recaudado</span><strong>${formatMoney(u.stats.total)}</strong></div>
         <div class="tenant-stat"><span>Ordenes</span><strong>${u.stats.orders}</strong></div>
         <div class="tenant-stat"><span>Pendientes</span><strong>${u.stats.pending}</strong></div>
-        <div class="tenant-stat"><span>Links</span><strong>${u.stats.activeLinks}/${plan.maxLinks}</strong></div>
+        <div class="tenant-stat"><span>Links</span><strong>${u.stats.links}/${plan.maxLinks}</strong></div>
       </div>
       ${u.loadError ? `<div style="color:var(--red);font-size:12px;margin-top:10px">${escapeHtml(u.loadError)}</div>` : ""}
     </article>`;
@@ -441,7 +441,7 @@ function renderClientView(uid) {
       <div class="detail-item"><span>Recaudado confirmado</span><strong>${formatMoney(u.stats.total)}</strong></div>
       <div class="detail-item"><span>Ordenes</span><strong>${u.stats.orders}</strong></div>
       <div class="detail-item"><span>Pendientes</span><strong>${u.stats.pending}</strong></div>
-      <div class="detail-item"><span>Links activos</span><strong>${u.stats.activeLinks}/${plan.maxLinks}</strong></div>
+      <div class="detail-item"><span>Links creados</span><strong>${u.stats.links}/${plan.maxLinks}</strong></div>
       <div class="detail-item"><span>Nombre</span><strong>${escapeHtml([u.nombre, u.apellido].filter(Boolean).join(" ") || "-")}</strong></div>
       <div class="detail-item"><span>Alta</span><strong>${formatDate(u.createdAt)}</strong></div>
       <div class="detail-item"><span>User ID</span><strong title="${u.id}">${u.id}</strong></div>
@@ -516,7 +516,7 @@ function updateMetrics() {
   const total = USERS.reduce((sum, u) => sum + u.stats.total, 0);
   document.getElementById("m-users").textContent = USERS.length;
   document.getElementById("m-active").textContent = USERS.filter(u => u.active !== false).length;
-  document.getElementById("m-links").textContent = USERS.reduce((sum, u) => sum + u.stats.activeLinks, 0);
+  document.getElementById("m-links").textContent = USERS.reduce((sum, u) => sum + u.stats.links, 0);
   document.getElementById("m-orders").textContent = ORDERS.length;
   document.getElementById("m-total").textContent = formatMoney(total);
   document.getElementById("m-pending").textContent = USERS.reduce((sum, u) => sum + u.stats.pending, 0);
