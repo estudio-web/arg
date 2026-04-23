@@ -24,7 +24,7 @@ const PLANS = {
     price: 15000,
     maxLinks: 10,
     durationDays: null,
-    description: "Hasta 10 links activos"
+    description: "Hasta 10 links de pago"
   },
   plan2: {
     id: "plan2",
@@ -32,7 +32,7 @@ const PLANS = {
     price: 25000,
     maxLinks: 50,
     durationDays: null,
-    description: "Hasta 50 links activos"
+    description: "Hasta 50 links de pago"
   }
 };
 
@@ -211,9 +211,7 @@ async function checkLinkLimit(db, uid, profileOrPlan) {
   const plan = getPlanMeta(normalizePlan(profile));
   if (isPlanExpired(profile)) return { ok: false, count: 0, max: plan.maxLinks, reason: "expired" };
   const paymentsRef = db.collection("users").doc(uid).collection("payments");
-  const snap = plan.id === "trial"
-    ? await paymentsRef.get()
-    : await paymentsRef.where("active", "==", true).get();
+  const snap = await paymentsRef.get();
   const count = snap.size;
   return { ok: count < plan.maxLinks, count, max: plan.maxLinks, reason: count >= plan.maxLinks ? "limit" : "" };
 }
