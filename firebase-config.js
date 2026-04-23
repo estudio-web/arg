@@ -14,7 +14,7 @@ export const APP_CONFIG = {
   currencySymbol: "$",
   whatsappNumber: "5490000000000",
   appName: "IN-STORE",
-  paymentLink: "https://mpago.la/TU_LINK_DE_PAGO",
+  paymentLink: "http://127.0.0.1:5500/payments/payments.html?u=c2Q2sYbqeYQc5GFHU1AodfJQ8O12&p=Z7sClHy1we4MK4sIINBQ",
 };
 
 // Planes disponibles del SaaS
