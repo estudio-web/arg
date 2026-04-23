@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Pedidos – NV-STORE</title>
+<title>Pedidos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -33,6 +33,15 @@ body{font-family:'Nunito',Arial,sans-serif;background:var(--bg);color:var(--text
 
 .main{max-width:900px;margin:0 auto;padding:12px 12px 80px}
 
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.search-wrap{flex:1;position:relative;min-width:220px}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;fill:#999;pointer-events:none}
+.search-input,.filter-select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.85rem;background:var(--white);outline:none}
+.search-input{padding-left:36px}
+.search-input:focus,.filter-select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(52,131,250,.15)}
+.toolbar-btn{padding:10px 14px;border:none;border-radius:var(--radius);background:#111;color:var(--yellow);font-family:inherit;font-size:.8rem;font-weight:800;cursor:pointer}
+.toolbar-btn:hover{background:#222}
+
 /* STATS */
 .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
 @media(min-width:600px){.stats-grid{grid-template-columns:repeat(4,1fr)}}
@@ -48,6 +57,7 @@ body{font-family:'Nunito',Arial,sans-serif;background:var(--bg);color:var(--text
 
 .order-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;gap:10px}
 .order-id{font-size:.78rem;font-weight:700;color:var(--sub)}
+.order-customer{font-size:.82rem;font-weight:900;color:var(--text);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
 .order-time{font-size:.75rem;color:#aaa;margin-top:2px}
 .order-total{font-size:1.1rem;font-weight:900}
 .order-status{display:inline-flex;align-items:center;gap:4px;font-size:.7rem;font-weight:800;padding:4px 10px;border-radius:999px;flex-shrink:0;text-transform:capitalize}
@@ -68,6 +78,22 @@ body{font-family:'Nunito',Arial,sans-serif;background:var(--bg);color:var(--text
 .order-item-sub{font-size:.75rem;color:var(--sub)}
 
 .order-total-row{display:flex;justify-content:space-between;align-items:center;font-weight:900;font-size:.95rem;margin-bottom:12px;padding-top:4px}
+.payment-note{font-size:.78rem;font-weight:700;color:var(--sub);margin:-4px 0 12px}
+.payment-note.approved{color:var(--green-dk)}
+.payment-note.rejected{color:var(--red-dk)}
+.payment-card{margin:-2px 0 12px;padding:12px;border:1px solid #dceafe;background:#f8fbff;border-radius:12px}
+.payment-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.payment-card-title{font-size:.82rem;font-weight:900;color:var(--blue)}
+.payment-card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.payment-action-btn{padding:8px 12px;border:none;border-radius:var(--radius);font-family:inherit;font-size:.75rem;font-weight:800;cursor:pointer}
+.payment-action-btn.approve{background:var(--green);color:#fff}
+.payment-action-btn.reject{background:#fef2f2;color:var(--red);border:1px solid #fecaca}
+.payment-proof-link{display:inline-flex;align-items:center;gap:6px;padding:8px 11px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius);font-family:inherit;font-size:.76rem;font-weight:800;text-decoration:none}
+.payment-proof-link:hover{background:var(--blue-dk)}
+.payment-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.payment-field{background:#fff;border:1px solid #e7eefc;border-radius:10px;padding:9px 10px}
+.payment-label{font-size:.67rem;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:.35px;margin-bottom:3px}
+.payment-value{font-size:.82rem;font-weight:700;color:var(--text);word-break:break-word}
 
 .status-select{padding:7px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.83rem;font-weight:700;color:var(--text);background:var(--white);outline:none;cursor:pointer;transition:border-color .15s}
 .status-select:focus{border-color:var(--blue)}
@@ -76,6 +102,8 @@ body{font-family:'Nunito',Arial,sans-serif;background:var(--bg);color:var(--text
 .btn-wa-order{display:flex;align-items:center;gap:6px;padding:9px 14px;background:var(--green);color:#fff;border:none;border-radius:var(--radius);font-family:inherit;font-size:.82rem;font-weight:800;cursor:pointer;text-decoration:none;transition:background .15s}
 .btn-wa-order:hover{background:var(--green-dk)}
 .btn-wa-order svg{width:16px;height:16px;fill:#fff}
+.btn-pay-order{padding:9px 14px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius);font-family:inherit;font-size:.82rem;font-weight:800;cursor:pointer;transition:background .15s}
+.btn-pay-order:hover{background:var(--blue-dk)}
 .btn-del-order{padding:9px 14px;background:#fef2f2;color:var(--red);border:1px solid #fecaca;border-radius:var(--radius);font-family:inherit;font-size:.82rem;font-weight:800;cursor:pointer;transition:background .15s}
 .btn-del-order:hover{background:#fee2e2}
 
@@ -95,6 +123,29 @@ body{font-family:'Nunito',Arial,sans-serif;background:var(--bg);color:var(--text
 .confirm-btns{display:flex;gap:8px}
 .confirm-cancel{flex:1;padding:11px;background:var(--bg);border:none;border-radius:var(--radius);font-family:inherit;font-weight:700;cursor:pointer}
 .confirm-ok{flex:1;padding:11px;background:var(--red);color:#fff;border:none;border-radius:var(--radius);font-family:inherit;font-weight:800;cursor:pointer}
+
+.payment-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(3px);display:none;align-items:flex-end;z-index:320}
+.payment-modal.open{display:flex}
+.payment-box{background:var(--white);width:100%;max-width:540px;margin:0 auto;border-radius:20px 20px 0 0;box-shadow:var(--shadow-md);padding:18px 16px 22px}
+.payment-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.payment-title{font-size:1rem;font-weight:900}
+.payment-close{width:32px;height:32px;border:none;border-radius:50%;background:var(--bg);color:var(--sub);font-size:1rem;cursor:pointer}
+.payment-sub{font-size:.8rem;color:var(--sub);margin-bottom:12px}
+.payment-fields{display:grid;gap:10px}
+.payment-field label{display:block;font-size:.72rem;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+.payment-field input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.92rem;outline:none}
+.payment-field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(52,131,250,.15)}
+.payment-link-preview{margin-top:12px;padding:10px 12px;border-radius:var(--radius);background:#f8fbff;border:1px solid #dceafe;color:var(--blue);font-size:.8rem;word-break:break-all}
+.payment-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.payment-actions button{flex:1;padding:11px 14px;border:none;border-radius:var(--radius);font-family:inherit;font-size:.82rem;font-weight:800;cursor:pointer}
+.btn-payment-copy{background:#111;color:var(--yellow)}
+.btn-payment-wa{background:var(--green);color:#fff}
+
+@media(max-width:560px){
+  .payment-box{max-width:none}
+  .payment-actions button{flex:1 1 100%}
+  .payment-grid{grid-template-columns:1fr}
+}
 
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#222;color:#fff;font-size:.83rem;font-weight:700;padding:9px 18px;border-radius:999px;z-index:2000;opacity:0;transition:opacity .25s,transform .25s;white-space:nowrap;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -123,6 +174,21 @@ body{font-family:'Nunito',Arial,sans-serif;background:var(--bg);color:var(--text
 </div>
 
 <main class="main">
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24"><path d="M10 2a8 8 0 105.293 14.121l4.293 4.293 1.414-1.414-4.293-4.293A8 8 0 0010 2zm0 2a6 6 0 110 12A6 6 0 0110 4z"/></svg>
+      <input id="searchInput" class="search-input" placeholder="Buscar por pedido, cliente o WhatsApp">
+    </div>
+    <select id="paymentFilter" class="filter-select" style="max-width:180px">
+      <option value="all">Todos los pagos</option>
+      <option value="with_payment">Con pago</option>
+      <option value="without_payment">Sin pago</option>
+      <option value="paid">Comprobante enviado</option>
+      <option value="approved">Pago validado</option>
+      <option value="rejected">Pago rechazado</option>
+    </select>
+    <button class="toolbar-btn" id="exportCsvBtn">Exportar CSV</button>
+  </div>
   <div class="stats-grid" id="statsGrid" style="display:none"></div>
   <div id="loadingState" class="loading"><div class="spinner"></div>Cargando pedidos…</div>
   <div id="orderList" class="order-list" style="display:none"></div>
@@ -140,6 +206,31 @@ body{font-family:'Nunito',Arial,sans-serif;background:var(--bg);color:var(--text
     <div class="confirm-btns">
       <button class="confirm-cancel" id="confirmCancel">Cancelar</button>
       <button class="confirm-ok" id="confirmOk">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<div class="payment-modal" id="paymentModal">
+  <div class="payment-box">
+    <div class="payment-head">
+      <div class="payment-title">Generar pago</div>
+      <button class="payment-close" id="paymentClose">✕</button>
+    </div>
+    <div class="payment-sub" id="paymentOrderRef">Pedido seleccionado</div>
+    <div class="payment-fields">
+      <div class="payment-field">
+        <label>Monto</label>
+        <input id="paymentAmount" type="number" min="1" placeholder="Monto a cobrar">
+      </div>
+      <div class="payment-field">
+        <label>WhatsApp cliente</label>
+        <input id="paymentCustomerWa" type="text" placeholder="54911...">
+      </div>
+    </div>
+    <div class="payment-link-preview" id="paymentLinkPreview">Generá el link para verlo acá.</div>
+    <div class="payment-actions">
+      <button class="btn-payment-wa" id="paymentSendWa">Enviar por WhatsApp</button>
+      <button class="btn-payment-copy" id="paymentCopyLink">Copiar link</button>
     </div>
   </div>
 </div>
@@ -164,10 +255,14 @@ const params   = new URLSearchParams(location.search);
 let tenantId   = params.get("t");
 let allOrders  = [];
 let activeFilter = "all";
+let activePaymentFilter = "all";
 let tenantConfig = {};
 let confirmCb  = null;
+let currentPaymentOrder = null;
 
 const $ = id => document.getElementById(id);
+window.approvePayment = approvePayment;
+window.rejectPayment = rejectPayment;
 
 /* ── Auth ── */
 onAuthStateChanged(auth, async user => {
@@ -208,6 +303,12 @@ document.querySelectorAll(".filter-chip").forEach(chip => {
   };
 });
 
+$("searchInput").addEventListener("input", render);
+$("paymentFilter").addEventListener("input", e => {
+  activePaymentFilter = e.target.value;
+  render();
+});
+
 /* ── Firestore ── */
 function startListener() {
   onSnapshot(collection(db, `tenants/${tenantId}/orders`), snap => {
@@ -224,21 +325,34 @@ function startListener() {
 
 /* ── Render ── */
 function render() {
-  const filtered = activeFilter === "all"
-    ? allOrders
-    : allOrders.filter(o => o.status === activeFilter);
+  const q = $("searchInput").value.toLowerCase().trim();
+  const filtered = allOrders.filter(o => {
+    if (activeFilter !== "all" && o.status !== activeFilter) return false;
+    if (!matchesPaymentFilter(o)) return false;
+    if (!q) return true;
+    const haystack = [
+      o.id,
+      getOrderCustomerName(o),
+      getOrderCustomerWa(o),
+      o.nombre,
+      o.dni
+    ].join(" ").toLowerCase();
+    return haystack.includes(q);
+  });
 
   // Stats
   const total     = allOrders.length;
   const pendiente = allOrders.filter(o => o.status === "pendiente").length;
   const revenue   = allOrders.filter(o => o.status !== "cancelado").reduce((a, o) => a + (o.total || 0), 0);
   const currency  = tenantConfig.currencySymbol || APP_CONFIG.currencySymbol;
+  const paidReview = allOrders.filter(o => getPaymentStatus(o) === "paid").length;
 
   $("statsGrid").innerHTML = `
     <div class="stat-card"><div class="stat-val">${total}</div><div class="stat-label">Total pedidos</div></div>
     <div class="stat-card"><div class="stat-val" style="color:var(--orange)">${pendiente}</div><div class="stat-label">Pendientes</div></div>
     <div class="stat-card"><div class="stat-val" style="color:var(--green)">${currency}${revenue.toLocaleString()}</div><div class="stat-label">Ingresos</div></div>
     <div class="stat-card"><div class="stat-val" style="color:var(--blue)">${allOrders.filter(o=>o.status==="entregado").length}</div><div class="stat-label">Entregados</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--purple)">${paidReview}</div><div class="stat-label">Pagos por revisar</div></div>
   `;
 
   const orderList = $("orderList");
@@ -264,6 +378,7 @@ function render() {
       <div class="order-header">
         <div>
           <div class="order-id">Pedido #${order.id.slice(-6).toUpperCase()}</div>
+          ${getOrderCustomerName(order) ? `<div class="order-customer">${esc(getOrderCustomerName(order))}</div>` : ""}
           <div class="order-time">${date}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
@@ -288,6 +403,8 @@ function render() {
           <span>Total</span>
           <span>${currency}${(order.total || 0).toLocaleString()}</span>
         </div>
+        ${renderPaymentNote(order, currency)}
+        ${renderPaymentDetails(order, currency)}
         <div class="order-actions">
           <select class="status-select" data-id="${order.id}">
             <option value="pendiente"  ${order.status==="pendiente"  ? "selected":""}>⏳ Pendiente</option>
@@ -295,6 +412,7 @@ function render() {
             <option value="entregado"  ${order.status==="entregado"  ? "selected":""}>📬 Entregado</option>
             <option value="cancelado"  ${order.status==="cancelado"  ? "selected":""}>❌ Cancelado</option>
           </select>
+          <button class="btn-pay-order" data-order="${order.id}">Generar pago</button>
           <button class="btn-wa-order" data-order="${order.id}">
             <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.974 2C6.465 2 2 6.465 2 11.974c0 1.87.516 3.622 1.416 5.12L2 22l5.066-1.388A9.929 9.929 0 0011.974 22C17.483 22 22 17.535 22 12.026 22 6.465 17.483 2 11.974 2zm0 18.184a8.173 8.173 0 01-4.296-1.216l-.308-.183-3.006.822.855-2.928-.2-.32a8.173 8.173 0 01-1.258-4.385c0-4.518 3.674-8.192 8.213-8.192 4.54 0 8.213 3.674 8.213 8.192 0 4.539-3.674 8.21-8.213 8.21z"/></svg>
             WhatsApp
@@ -326,6 +444,8 @@ function render() {
       window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, "_blank");
     };
 
+    card.querySelector(".btn-pay-order").onclick = () => openPaymentModal(order, currency);
+
     // Delete
     card.querySelector(".btn-del-order").onclick = () => {
       openConfirm("¿Eliminar pedido?", "Esta acción no se puede deshacer.", async () => {
@@ -342,6 +462,133 @@ function statusLabel(s) {
   return { pendiente: "⏳ Pendiente", confirmado: "✅ Confirmado", entregado: "📬 Entregado", cancelado: "❌ Cancelado" }[s] || s;
 }
 
+function getPaymentStatus(order) {
+  return order.payment?.status || "none";
+}
+
+function matchesPaymentFilter(order) {
+  const paymentStatus = getPaymentStatus(order);
+  if (activePaymentFilter === "all") return true;
+  if (activePaymentFilter === "with_payment") return paymentStatus !== "none";
+  if (activePaymentFilter === "without_payment") return paymentStatus === "none";
+  return paymentStatus === activePaymentFilter;
+}
+
+function getOrderCustomerName(order) {
+  return (
+    order.nombre ||
+    order.customerName ||
+    order.name ||
+    order.cliente ||
+    ""
+  ).toString().trim();
+}
+
+function renderPaymentNote(order, currency) {
+  const paymentStatus = getPaymentStatus(order);
+  if (paymentStatus === "none") return "";
+  const amount = order.payment?.amount ? ` • ${currency}${Number(order.payment.amount).toLocaleString("es-AR")}` : "";
+  if (paymentStatus === "approved") return `<div class="payment-note approved">Pago validado${amount}</div>`;
+  if (paymentStatus === "rejected") return `<div class="payment-note rejected">Pago rechazado${amount}</div>`;
+  return `<div class="payment-note">Comprobante enviado${amount}</div>`;
+}
+
+function renderPaymentDetails(order, currency) {
+  if (getPaymentStatus(order) === "none") return "";
+
+  const amount = order.payment?.amount ? `${currency}${Number(order.payment.amount).toLocaleString("es-AR")}` : "Sin monto";
+  const payerName = getOrderCustomerName(order) || "Sin nombre";
+  const payerDni = order.dni || "Sin DNI";
+  const payerWhatsapp = getOrderCustomerWa(order) || "Sin WhatsApp";
+  const paidAt = order.payment?.paidAt?.seconds
+    ? new Date(order.payment.paidAt.seconds * 1000).toLocaleString("es-AR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    : "Sin fecha";
+  const proofUrl = order.payment?.proofUrl || "";
+  const paymentStatus = getPaymentStatus(order);
+  const stateLabel = paymentStatus === "approved" ? "Pago validado" : paymentStatus === "rejected" ? "Pago rechazado" : "Comprobante enviado";
+
+  return `
+    <div class="payment-card">
+      <div class="payment-card-head">
+        <div class="payment-card-title">Comprobante de pago</div>
+        ${proofUrl ? `<a class="payment-proof-link" href="${esc(proofUrl)}" target="_blank" rel="noopener">Ver comprobante</a>` : ""}
+      </div>
+      <div class="payment-grid">
+        <div class="payment-field">
+          <div class="payment-label">Emisor</div>
+          <div class="payment-value">${esc(payerName)}</div>
+        </div>
+        <div class="payment-field">
+          <div class="payment-label">DNI</div>
+          <div class="payment-value">${esc(payerDni)}</div>
+        </div>
+        <div class="payment-field">
+          <div class="payment-label">WhatsApp</div>
+          <div class="payment-value">${esc(payerWhatsapp)}</div>
+        </div>
+        <div class="payment-field">
+          <div class="payment-label">Monto informado</div>
+          <div class="payment-value">${esc(amount)}</div>
+        </div>
+        <div class="payment-field">
+          <div class="payment-label">Fecha de pago</div>
+          <div class="payment-value">${esc(paidAt)}</div>
+        </div>
+        <div class="payment-field">
+          <div class="payment-label">Estado</div>
+          <div class="payment-value">${stateLabel}</div>
+        </div>
+      </div>
+      <div class="payment-card-actions">
+        <button class="payment-action-btn approve" onclick="event.stopPropagation(); approvePayment('${order.id}')">Validar pago</button>
+        <button class="payment-action-btn reject" onclick="event.stopPropagation(); rejectPayment('${order.id}')">Rechazar pago</button>
+      </div>
+    </div>
+  `;
+}
+
+function getOrderCustomerWa(order) {
+  return (
+    order.whatsapp ||
+    order.whatsappNumber ||
+    order.phone ||
+    order.telefono ||
+    order.celular ||
+    ""
+  ).toString().replace(/\D/g, "");
+}
+
+function buildPaymentLink(order, amount) {
+  const base = `${location.origin}${location.pathname.replace("orders.html", "payments.html")}`;
+  return `${base}?tenant=${encodeURIComponent(tenantId)}&orderId=${encodeURIComponent(order.id)}&monto=${encodeURIComponent(amount)}`;
+}
+
+function refreshPaymentPreview() {
+  if (!currentPaymentOrder) return;
+  const amount = Math.max(0, Number($("paymentAmount").value) || 0);
+  $("paymentLinkPreview").textContent = amount ? buildPaymentLink(currentPaymentOrder, amount) : "Ingresá un monto válido para generar el link.";
+}
+
+function openPaymentModal(order, currency) {
+  currentPaymentOrder = order;
+  $("paymentOrderRef").textContent = `Pedido #${order.id.slice(-6).toUpperCase()} • Total actual ${currency}${(order.total || 0).toLocaleString()}`;
+  $("paymentAmount").value = Number(order.total || 0);
+  $("paymentCustomerWa").value = getOrderCustomerWa(order);
+  refreshPaymentPreview();
+  $("paymentModal").classList.add("open");
+}
+
+function closePaymentModal() {
+  $("paymentModal").classList.remove("open");
+  currentPaymentOrder = null;
+}
+
 /* ── Confirm ── */
 function openConfirm(title, text, cb) {
   $("confirmTitle").textContent = title; $("confirmText").textContent = text; confirmCb = cb;
@@ -352,6 +599,84 @@ $("confirmOk").onclick = async () => {
   $("confirmOverlay").classList.remove("open");
   if (confirmCb) await confirmCb(); confirmCb = null;
 };
+
+$("paymentClose").onclick = closePaymentModal;
+$("paymentModal").onclick = e => { if (e.target.id === "paymentModal") closePaymentModal(); };
+$("paymentAmount").addEventListener("input", refreshPaymentPreview);
+$("paymentCustomerWa").addEventListener("input", refreshPaymentPreview);
+$("paymentCopyLink").onclick = async () => {
+  if (!currentPaymentOrder) return;
+  const amount = Math.max(0, Number($("paymentAmount").value) || 0);
+  if (!amount) { showToast("Ingresá un monto válido"); return; }
+  const link = buildPaymentLink(currentPaymentOrder, amount);
+  await navigator.clipboard.writeText(link);
+  showToast("Link de pago copiado");
+};
+$("paymentSendWa").onclick = () => {
+  if (!currentPaymentOrder) return;
+  const amount = Math.max(0, Number($("paymentAmount").value) || 0);
+  const customerWa = $("paymentCustomerWa").value.replace(/\D/g, "");
+  if (!amount) { showToast("Ingresá un monto válido"); return; }
+  if (!customerWa) { showToast("Falta el WhatsApp del cliente"); return; }
+  const currency = tenantConfig.currencySymbol || APP_CONFIG.currencySymbol;
+  const link = buildPaymentLink(currentPaymentOrder, amount);
+  const msg = `Hola ${currentPaymentOrder.nombre || ""}, te comparto tu link de pago.\n\nPedido #${currentPaymentOrder.id.slice(-6).toUpperCase()}\nMonto: ${currency}${amount.toLocaleString("es-AR")}\n${link}`;
+  window.open(`https://wa.me/${customerWa}?text=${encodeURIComponent(msg)}`, "_blank");
+};
+
+$("exportCsvBtn").onclick = exportOrdersCsv;
+
+async function approvePayment(orderId) {
+  await updateDoc(doc(db, `tenants/${tenantId}/orders`, orderId), {
+    "payment.status": "approved",
+    "payment.reviewedAt": serverTimestamp(),
+    "payment.reviewedBy": auth.currentUser?.uid || "",
+    updatedAt: serverTimestamp()
+  });
+  showToast("Pago validado");
+}
+
+async function rejectPayment(orderId) {
+  await updateDoc(doc(db, `tenants/${tenantId}/orders`, orderId), {
+    "payment.status": "rejected",
+    "payment.reviewedAt": serverTimestamp(),
+    "payment.reviewedBy": auth.currentUser?.uid || "",
+    updatedAt: serverTimestamp()
+  });
+  showToast("Pago rechazado");
+}
+
+function exportOrdersCsv() {
+  const rows = allOrders.map(order => ({
+    pedido: order.id,
+    cliente: getOrderCustomerName(order),
+    whatsapp: getOrderCustomerWa(order),
+    dni: order.dni || "",
+    total: Number(order.total || 0),
+    estado_pedido: order.status || "",
+    estado_pago: getPaymentStatus(order),
+    monto_pago: Number(order.payment?.amount || 0),
+    fecha: order.createdAt?.seconds ? new Date(order.createdAt.seconds * 1000).toISOString() : "",
+    comprobante: order.payment?.proofUrl || ""
+  }));
+  const headers = Object.keys(rows[0] || {
+    pedido: "", cliente: "", whatsapp: "", dni: "", total: "", estado_pedido: "", estado_pago: "", monto_pago: "", fecha: "", comprobante: ""
+  });
+  const csv = [
+    headers.join(","),
+    ...rows.map(row => headers.map(key => `"${String(row[key] ?? "").replace(/"/g, '""')}"`).join(","))
+  ].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `orders-${tenantId || "tenant"}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast("CSV exportado");
+}
 
 /* ── Helpers ── */
 function esc(t = "") { const d = document.createElement("div"); d.textContent = String(t); return d.innerHTML; }
