@@ -289,6 +289,10 @@ body{font-family:'Nunito',Arial,sans-serif;background:var(--bg);color:var(--text
         <span>Pedidos</span>
         <span class="orders-badge" id="ordersBadge" style="display:none">0</span>
       </button>
+      <button class="btn-icon btn-orders" id="btnInternal">
+        <svg viewBox="0 0 24 24"><path d="M5 9.2h2.8V19H5V9.2zm5.6-4.2h2.8V19h-2.8V5zm5.6 7h2.8v7h-2.8v-7z"/></svg>
+        <span>Interno</span>
+      </button>
       <button class="btn-icon btn-share" id="shareCatalogBtn">
         <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a2.5 2.5 0 000-1.39l7-4.11A2.99 2.99 0 0018 7.91 3 3 0 1015 5a2.9 2.9 0 00.04.49l-7 4.12a3 3 0 100 4.78l7.05 4.14c-.03.15-.05.31-.05.47a3 3 0 103-2.92z"/></svg>
         <span>Compartir</span>
@@ -900,6 +904,7 @@ $("shareCatalogBtn").onclick = () => {
 };
 
 $("btnOrders").onclick = () => { window.location.href = `orders.html?t=${tenantId}`; };
+$("btnInternal").onclick = () => { window.location.href = `internal.html?t=${tenantId}`; };
 
 /* ══ PRODUCT MODAL ══ */
 function openAddModal() {
