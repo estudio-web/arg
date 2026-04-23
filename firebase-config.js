@@ -22,6 +22,6 @@ export const PLANS = {
   trial:   { name: "Trial",   days: 14,  productLimit: 3,    isUnlimited: false, price: 0     },
   basic:   { name: "Básico",  days: 30,  productLimit: 60,   isUnlimited: false, price: 37999  },
   pro:     { name: "Pro",     days: 30,  productLimit: 150,  isUnlimited: false, price: 59999  },
-  premium: { name: "Premium", days: 30,  productLimit: null, isUnlimited: true,  price: 89999 },
+  premium: { name: "Premium", days: 30,  productLimit: null, isUnlimited: true,  price: 119999 },
 };
 
