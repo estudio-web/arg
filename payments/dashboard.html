@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -211,7 +211,7 @@
           <h1>Links de pago</h1>
           <p>Creá y gestioná tus links de cobro</p>
         </div>
-        <button class="btn btn-primary" style="margin-left:auto;flex-shrink:0" onclick="openModal('modal-new-link')">
+        <button class="btn btn-primary" id="btn-new-link" style="margin-left:auto;flex-shrink:0" onclick="openNewLinkModal()">
           <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
           Nuevo link
         </button>
@@ -514,16 +514,36 @@ function renderLinks() {
   container.innerHTML = ALL_LINKS.map(link => {
     const url = buildPaymentURL(UID, link.id);
     const active = link.active !== false;
-    return `<div class="link-card"><div class="link-card-icon"><svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg></div><div class="link-card-body"><div class="link-card-title">${escapeHtml(link.descripcion || "Sin descripcion")}</div><div class="link-card-meta"><span class="link-amount">${formatMoney(link.monto)}</span><span class="badge ${active ? "green" : "gray"}"><span class="badge-dot"></span>${active ? "Activo" : "Inactivo"}</span><span style="color:var(--muted-2);font-size:11px">${shortDate(link.createdAt)}</span></div><div class="link-card-url">${url}</div></div><div class="link-card-actions"><button class="btn-icon" title="Ver link" onclick="viewLink('${link.id}')">Ver</button><button class="btn-icon" title="Copiar URL" onclick="copyToClipboard('${url}')">Copiar</button><button class="btn-icon" title="${active ? "Desactivar" : "Activar"}" onclick="toggleLink('${link.id}', ${active})">${active ? "Off" : "On"}</button></div></div>`;
+    const toggleAction = getLinkToggleAction(link.id, active);
+    return `<div class="link-card"><div class="link-card-icon"><svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg></div><div class="link-card-body"><div class="link-card-title">${escapeHtml(link.descripcion || "Sin descripcion")}</div><div class="link-card-meta"><span class="link-amount">${formatMoney(link.monto)}</span><span class="badge ${active ? "green" : "gray"}"><span class="badge-dot"></span>${active ? "Activo" : "Inactivo"}</span><span style="color:var(--muted-2);font-size:11px">${shortDate(link.createdAt)}</span></div><div class="link-card-url" title="${url}">${url}</div></div><div class="link-card-actions"><button class="btn-icon" title="Ver link" onclick="viewLink('${link.id}')">Ver</button><button class="btn-icon" title="Copiar URL" onclick="copyToClipboard('${url}')">Copiar</button>${toggleAction}</div></div>`;
   }).join("");
+}
+function getLinkToggleAction(id, active) {
+  if (USER_PROFILE.plan === "trial" && active) return "";
+  return `<button class="btn-icon" title="${active ? "Desactivar" : "Activar"}" onclick="toggleLink('${id}', ${active})">${active ? "Off" : "On"}</button>`;
 }
 function renderLimitBar() {
   const activeCount = ALL_LINKS.filter(l => l.active !== false).length;
+  const usedCount = USER_PROFILE.plan === "trial" ? ALL_LINKS.length : activeCount;
   const plan = getPlanMeta(USER_PROFILE.plan);
-  const pct = Math.min(100, (activeCount / plan.maxLinks) * 100);
+  const pct = Math.min(100, (usedCount / plan.maxLinks) * 100);
   const fillClass = pct >= 100 ? "full" : pct >= 80 ? "warn" : "";
   const expired = isPlanExpired(USER_PROFILE);
-  document.getElementById("limit-bar-container").innerHTML = `<div class="limit-bar-wrap"><div class="limit-bar-top"><span style="font-weight:600;font-size:13px">${activeCount} de ${plan.maxLinks} links activos</span><span>${plan.name}${expired ? " vencido" : ""}</span></div><div class="limit-bar"><div class="limit-bar-fill ${fillClass}" style="width:${pct}%"></div></div>${expired ? `<div style="font-size:12px;color:var(--red);margin-top:6px">Plan vencido. Contacta al administrador para reactivarlo.</div>` : ""}</div>`;
+  const label = USER_PROFILE.plan === "trial" ? "links creados" : "links activos";
+  document.getElementById("limit-bar-container").innerHTML = `<div class="limit-bar-wrap"><div class="limit-bar-top"><span style="font-weight:600;font-size:13px">${usedCount} de ${plan.maxLinks} ${label}</span><span>${plan.name}${expired ? " vencido" : ""}</span></div><div class="limit-bar"><div class="limit-bar-fill ${fillClass}" style="width:${pct}%"></div></div>${expired ? `<div style="font-size:12px;color:var(--red);margin-top:6px">Plan vencido. Contacta al administrador para reactivarlo.</div>` : ""}</div>`;
+  const btn = document.getElementById("btn-new-link");
+  if (btn) {
+    btn.disabled = expired || usedCount >= plan.maxLinks;
+    btn.title = btn.disabled ? (expired ? "Plan vencido" : `Limite de ${plan.maxLinks} links alcanzado`) : "Nuevo link";
+  }
+}
+async function openNewLinkModal() {
+  const limit = await checkLinkLimit(DB, UID, USER_PROFILE);
+  if (!limit.ok) {
+    showToast(limit.reason === "expired" ? "Tu plan esta vencido" : `Limite de ${limit.max} links alcanzado`, "error");
+    return;
+  }
+  openModal("modal-new-link");
 }
 async function createLink() {
   const desc = document.getElementById("nl-desc").value.trim();
@@ -544,7 +564,15 @@ function updateNewLinkPreview() { const v = parseFloat(document.getElementById("
 function viewLink(id) { CURRENT_LINK = ALL_LINKS.find(l => l.id === id); if (!CURRENT_LINK) return; const url = buildPaymentURL(UID, id); document.getElementById("vl-title").textContent = CURRENT_LINK.descripcion || "Mi link"; document.getElementById("vl-url").textContent = url; document.getElementById("vl-url-input").value = url; document.getElementById("vl-qr").src = getQRUrl(url, 180); openModal("modal-view-link"); }
 function copyLinkURL() { copyToClipboard(document.getElementById("vl-url-input").value); }
 function copyWhatsAppMsg() { if (!CURRENT_LINK) return; const url = buildPaymentURL(UID, CURRENT_LINK.id); copyToClipboard(`Hola! Te paso el link para realizar el pago de *${CURRENT_LINK.descripcion}* por ${formatMoney(CURRENT_LINK.monto)}:\n\n${url}\n\nCuando pagues, enviame el comprobante desde esa pagina. Gracias!`); }
-async function toggleLink(id, currentActive) { await DB.collection("users").doc(UID).collection("payments").doc(id).update({ active: !currentActive }); showToast(currentActive ? "Link desactivado" : "Link activado", "info"); await loadLinks(); updateStats(); }
+async function toggleLink(id, currentActive) {
+  if (USER_PROFILE.plan === "trial" && currentActive) {
+    showToast("En trial no se puede desactivar el unico link permitido", "error");
+    return;
+  }
+  await DB.collection("users").doc(UID).collection("payments").doc(id).update({ active: !currentActive });
+  showToast(currentActive ? "Link desactivado" : "Link activado", "info");
+  await loadLinks(); updateStats();
+}
 
 async function loadOrders() { const snap = await DB.collection("users").doc(UID).collection("orders").orderBy("fecha", "desc").get(); ALL_ORDERS = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderOrders(ALL_ORDERS); renderRecentOrders(); }
 function renderOrders(orders) {
@@ -565,6 +593,7 @@ function contactUpgrade() { const msg = encodeURIComponent(`Hola! Quiero cambiar
 </script>
 </body>
 </html>
+
 
 
 
