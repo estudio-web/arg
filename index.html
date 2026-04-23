@@ -183,7 +183,7 @@ body{font-family:'Nunito',Arial,sans-serif;background:var(--bg);color:var(--text
   position:fixed;
   bottom:20px;
   left:20px;
-  z-index:999;
+  z-index:110;
 
   background:#000;
   color:#ffe600;
@@ -197,6 +197,12 @@ body{font-family:'Nunito',Arial,sans-serif;background:var(--bg);color:var(--text
 
   box-shadow:0 6px 20px rgba(0,0,0,.25);
   transition:.2s;
+}
+
+body.overlay-open .cta-saas{
+  opacity:0;
+  pointer-events:none;
+  transform:translateY(12px);
 }
 
 .cta-saas:hover{
@@ -615,6 +621,7 @@ function openProductModal(p) {
 
   resetZoom(false);
   document.getElementById("productModal").classList.add("open");
+  document.body.classList.add("overlay-open");
   document.body.style.overflow = "hidden";
   zoomHint.classList.remove("hidden");
   clearTimeout(Z.hintTimer);
@@ -623,6 +630,7 @@ function openProductModal(p) {
 
 function closeProductModal() {
   document.getElementById("productModal").classList.remove("open");
+  document.body.classList.remove("overlay-open");
   document.body.style.overflow = "";
   resetZoom(false);
 }
@@ -724,10 +732,10 @@ function renderCart() {
   });
 }
 
-document.getElementById("btnCart").onclick    = () => { renderCart(); document.getElementById("cartDrawer").classList.add("open"); document.body.style.overflow = "hidden"; };
+document.getElementById("btnCart").onclick    = () => { renderCart(); document.getElementById("cartDrawer").classList.add("open"); document.body.classList.add("overlay-open"); document.body.style.overflow = "hidden"; };
 document.getElementById("btnCloseCart").onclick  = closeCart;
 document.getElementById("cartBackdrop").onclick  = closeCart;
-function closeCart() { document.getElementById("cartDrawer").classList.remove("open"); document.body.style.overflow = ""; }
+function closeCart() { document.getElementById("cartDrawer").classList.remove("open"); document.body.classList.remove("overlay-open"); document.body.style.overflow = ""; }
 
 /* ── Order via WhatsApp ── */
 document.getElementById("btnOrderWA").onclick = () => {
