@@ -210,7 +210,10 @@ async function checkLinkLimit(db, uid, profileOrPlan) {
   const profile = typeof profileOrPlan === "string" ? { plan: profileOrPlan } : profileOrPlan;
   const plan = getPlanMeta(normalizePlan(profile));
   if (isPlanExpired(profile)) return { ok: false, count: 0, max: plan.maxLinks, reason: "expired" };
-  const snap = await db.collection("users").doc(uid).collection("payments").where("active", "==", true).get();
+  const paymentsRef = db.collection("users").doc(uid).collection("payments");
+  const snap = plan.id === "trial"
+    ? await paymentsRef.get()
+    : await paymentsRef.where("active", "==", true).get();
   const count = snap.size;
   return { ok: count < plan.maxLinks, count, max: plan.maxLinks, reason: count >= plan.maxLinks ? "limit" : "" };
 }
