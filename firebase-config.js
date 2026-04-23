@@ -14,7 +14,7 @@ export const APP_CONFIG = {
   currencySymbol: "$",
   whatsappNumber: "5490000000000",
   appName: "IN-STORE",
-  paymentLink: "https://estudio-web.github.io/arg/payments/payments.html?u=c2Q2sYbqeYQc5GFHU1AodfJQ8O12&p=Z7sClHy1we4MK4sIINBQ",
+  paymentLink: "https://estudio-web.github.io/arg/payments/payments.html?u=c2Q2sYbqeYQc5GFHU1AodfJQ8O12&p=0YVmAmusZtfiMtsItBf2",
 };
 
 // Planes disponibles del SaaS
