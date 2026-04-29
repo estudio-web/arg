@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Importar productos</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif}
+body{background:#f3f4f6;color:#111827;min-height:100vh;padding:16px}
+.container{max-width:850px;margin:auto}
+.card{background:#fff;border-radius:18px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.08);margin-bottom:16px}
+h1{font-size:1.6rem;margin-bottom:8px}
+p{color:#6b7280;line-height:1.5;margin-bottom:12px}
+label{display:block;font-weight:700;margin-bottom:6px;font-size:.9rem}
+input,textarea{width:100%;padding:12px 14px;border:1px solid #d1d5db;border-radius:12px;font-size:.95rem;outline:none}
+textarea{min-height:320px;resize:vertical;font-family:monospace}
+button{border:none;padding:13px 16px;border-radius:12px;font-weight:800;cursor:pointer;font-size:.95rem}
+button:disabled{opacity:.6;cursor:not-allowed}
+.btn-primary{background:#2563eb;color:#fff}
+.btn-success{background:#16a34a;color:#fff}
+.btn-dark{background:#111827;color:#fff}
+.btn-gray{background:#e5e7eb;color:#111827}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.status{margin-top:12px;padding:12px;border-radius:12px;background:#f3f4f6;color:#374151;font-size:.92rem;white-space:pre-line}
+.ok{background:#dcfce7;color:#166534}
+.err{background:#fee2e2;color:#991b1b}
+.preview{margin-top:12px;max-height:280px;overflow:auto;border:1px solid #e5e7eb;border-radius:12px}
+.preview table{width:100%;border-collapse:collapse;font-size:.85rem}
+.preview th,.preview td{padding:9px;border-bottom:1px solid #e5e7eb;text-align:left}
+.hidden{display:none}
+@media(max-width:650px){.row{grid-template-columns:1fr}}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="card" id="loginBox">
+    <h1>Importador IN-STORE</h1>
+    <p>Ingresá con tu usuario master para importar productos masivamente.</p>
+
+    <div class="row">
+      <div>
+        <label>Email</label>
+        <input id="email" type="email" placeholder="tu@email.com">
+      </div>
+      <div>
+        <label>Contraseña</label>
+        <input id="password" type="password" placeholder="********">
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-primary" id="loginBtn">Ingresar</button>
+    </div>
+
+    <div class="status" id="loginStatus"></div>
+  </div>
+
+  <div id="appBox" class="hidden">
+
+    <div class="card">
+      <h1>Importar productos</h1>
+      <p>Pegá un array JSON de productos. Se cargarán en <b>tenants/{tenantId}/products</b>.</p>
+
+      <label>Tenant ID</label>
+      <input id="tenantId" placeholder="Ej: nvstore01">
+
+      <br><br>
+
+      <label>JSON de productos</label>
+      <textarea id="jsonInput" placeholder='[
+  {
+    "title": "Producto ejemplo",
+    "price": "12000"
+  }
+]'></textarea>
+
+      <div class="actions">
+        <button class="btn-gray" id="validateBtn">Validar JSON</button>
+        <button class="btn-success" id="importBtn">Importar productos</button>
+        <button class="btn-dark" id="logoutBtn">Salir</button>
+      </div>
+
+      <div class="status" id="statusBox">Esperando JSON...</div>
+      <div class="preview" id="previewBox"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<script type="module">
+import { firebaseConfig } from "./firebase-config.js";
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  collection,
+  addDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+const $ = id => document.getElementById(id);
+
+let currentUser = null;
+let parsedProducts = [];
+
+function setStatus(text, type = "") {
+  $("statusBox").className = "status " + type;
+  $("statusBox").textContent = text;
+}
+
+function setLoginStatus(text, type = "") {
+  $("loginStatus").className = "status " + type;
+  $("loginStatus").textContent = text;
+}
+
+$("loginBtn").onclick = async () => {
+  const email = $("email").value.trim();
+  const pass = $("password").value.trim();
+
+  if (!email || !pass) {
+    setLoginStatus("Completá email y contraseña.", "err");
+    return;
+  }
+
+  $("loginBtn").disabled = true;
+  $("loginBtn").textContent = "Ingresando...";
+
+  try {
+    setLoginStatus("Ingresando...");
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch (e) {
+    console.error(e);
+    setLoginStatus("Error login: " + e.message, "err");
+  } finally {
+    $("loginBtn").disabled = false;
+    $("loginBtn").textContent = "Ingresar";
+  }
+};
+
+$("password").addEventListener("keydown", e => {
+  if (e.key === "Enter") $("loginBtn").click();
+});
+
+$("logoutBtn").onclick = () => signOut(auth);
+
+onAuthStateChanged(auth, async user => {
+  if (!user) {
+    currentUser = null;
+    $("loginBox").classList.remove("hidden");
+    $("appBox").classList.add("hidden");
+    return;
+  }
+
+  try {
+    const snap = await getDoc(doc(db, "users", user.uid));
+
+    if (!snap.exists()) {
+      await signOut(auth);
+      setLoginStatus("Este usuario no existe en Firestore: users/" + user.uid, "err");
+      return;
+    }
+
+    const data = snap.data();
+    const allowedRoles = ["master", "superadmin"];
+
+    if (!allowedRoles.includes(data.role)) {
+      await signOut(auth);
+      setLoginStatus("Acceso denegado. Tu rol actual es: " + (data.role || "sin rol"), "err");
+      return;
+    }
+
+    currentUser = user;
+    $("tenantId").value = data.tenantId || "";
+
+    $("loginBox").classList.add("hidden");
+    $("appBox").classList.remove("hidden");
+
+    setStatus("Listo. Pegá el JSON y validalo antes de importar.", "ok");
+
+  } catch (e) {
+    console.error(e);
+    await signOut(auth);
+    setLoginStatus("Error validando permisos: " + e.message, "err");
+  }
+});
+
+function normalizeProduct(p) {
+  return {
+    title: String(p.title || p.nombre || "").trim(),
+    price: String(p.price || p.precio || "").replace("$", "").replace(/\./g, "").trim(),
+    description: String(p.description || p.descripcion || ""),
+    imageUrl: String(p.imageUrl || p.imagen || ""),
+    active: p.active !== false,
+    featured: p.featured === true,
+    stock: Number(p.stock || 0),
+    categoryId: p.categoryId || "",
+    promoPrice: p.promoPrice || "",
+    discount: p.discount || "",
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  };
+}
+
+function validateJSON() {
+  const raw = $("jsonInput").value.trim();
+
+  if (!raw) {
+    setStatus("Pegá un JSON primero.", "err");
+    return false;
+  }
+
+  try {
+    const data = JSON.parse(raw);
+
+    if (!Array.isArray(data)) {
+      setStatus("El JSON debe ser un array: [ {...}, {...} ]", "err");
+      return false;
+    }
+
+    const normalized = data.map(normalizeProduct);
+    const invalid = normalized.filter(p => !p.title || !p.price);
+
+    if (invalid.length) {
+      setStatus(`Hay ${invalid.length} producto(s) sin título o precio. Revisá el JSON.`, "err");
+      return false;
+    }
+
+    parsedProducts = normalized;
+    renderPreview(parsedProducts);
+
+    setStatus(`JSON válido. Se detectaron ${parsedProducts.length} producto(s).`, "ok");
+    return true;
+
+  } catch (e) {
+    console.error(e);
+    setStatus("JSON inválido. Revisá comas, comillas y corchetes.\n" + e.message, "err");
+    return false;
+  }
+}
+
+function renderPreview(products) {
+  const rows = products.slice(0, 50).map(p => `
+    <tr>
+      <td>${escapeHtml(p.title)}</td>
+      <td>$${escapeHtml(p.price)}</td>
+      <td>${p.active ? "Activo" : "Oculto"}</td>
+    </tr>
+  `).join("");
+
+  $("previewBox").innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Precio</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+$("validateBtn").onclick = validateJSON;
+
+$("importBtn").onclick = async () => {
+  const tenantId = $("tenantId").value.trim();
+
+  if (!tenantId) {
+    setStatus("Ingresá un Tenant ID.", "err");
+    return;
+  }
+
+  if (!parsedProducts.length) {
+    const ok = validateJSON();
+    if (!ok) return;
+  }
+
+  const confirmImport = confirm(`¿Importar ${parsedProducts.length} productos en el tenant "${tenantId}"?`);
+  if (!confirmImport) return;
+
+  $("importBtn").disabled = true;
+  $("importBtn").textContent = "Importando...";
+
+  let ok = 0;
+  let fail = 0;
+
+  for (const product of parsedProducts) {
+    try {
+      await addDoc(collection(db, `tenants/${tenantId}/products`), product);
+      ok++;
+      setStatus(`Importando...\nOK: ${ok}\nErrores: ${fail}`);
+    } catch (e) {
+      console.error("Error importando:", product.title, e);
+      fail++;
+      setStatus(`Importando...\nOK: ${ok}\nErrores: ${fail}\nÚltimo error: ${e.message}`, "err");
+    }
+  }
+
+  $("importBtn").disabled = false;
+  $("importBtn").textContent = "Importar productos";
+
+  if (fail === 0) {
+    setStatus(`Importación finalizada correctamente.\nProductos cargados: ${ok}`, "ok");
+  } else {
+    setStatus(`Importación finalizada con errores.\nOK: ${ok}\nErrores: ${fail}`, "err");
+  }
+};
+
+function escapeHtml(text = "") {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}
+</script>
+
+</body>
+</html>
