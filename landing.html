@@ -30,6 +30,57 @@ body{font-family:'Nunito',Arial,sans-serif;background:var(--dark);color:var(--te
 .nav-links{display:flex;align-items:center;gap:4px}
 .nav-link{padding:7px 14px;border-radius:8px;font-size:.85rem;font-weight:700;color:var(--sub);text-decoration:none;transition:color .15s,background .15s}
 .nav-link:hover{color:var(--text);background:rgba(255,255,255,.06)}
+
+.preview-gallery{
+  max-width:1200px;
+  margin:auto;
+  display:flex;
+  gap:20px;
+  overflow-x:auto;
+  padding:10px 5px;
+  scroll-snap-type:x mandatory;
+}
+
+.preview-gallery::-webkit-scrollbar{
+  height:6px;
+}
+
+.preview-gallery::-webkit-scrollbar-thumb{
+  background:#333;
+  border-radius:20px;
+}
+
+.preview-item{
+  flex:1;
+  min-width:320px;
+  scroll-snap-align:center;
+}
+
+.preview-item img{
+  width:100%;
+  border-radius:24px;
+  border:3px solid rgba(255, 255, 255, 0.918);
+  box-shadow:0 20px 60px rgba(172, 162, 162, 0.5);
+  transition:.3s;
+}
+
+.preview-item img:hover{
+  transform:translateY(-6px);
+}
+
+@media(max-width:768px){
+
+  .preview-gallery{
+    gap:14px;
+    padding-bottom:10px;
+  }
+
+  .preview-item{
+    min-width:85%;
+  }
+
+}
+
 @media(max-width:600px){.nav-links{display:none}}
 .btn-cta-sm{padding:9px 20px;background:var(--yellow);color:#111;border:none;border-radius:8px;font-family:inherit;font-size:.88rem;font-weight:900;cursor:pointer;text-decoration:none;transition:background .15s,transform .1s;white-space:nowrap}
 .btn-cta-sm:hover{background:var(--yellow-dk);transform:translateY(-1px)}
@@ -223,49 +274,25 @@ body{font-family:'Nunito',Arial,sans-serif;background:var(--dark);color:var(--te
   <div class="hero-note">Prueba <strong>3 días gratis</strong>. Sin tarjeta de crédito.</div>
 </section>
 
-<!-- DEMO -->
+<!-- PREVIEW REAL -->
 <section class="preview-section">
-  <div class="preview-phone">
-    <div class="preview-notch">
-      <div class="preview-notch-dot"></div>
-      <div class="preview-notch-dot"></div>
+
+  <div class="preview-gallery">
+
+    <div class="preview-item">
+      <img src="https://i.ibb.co/BxQ2jH8/tienda.png" alt="Tienda online">
     </div>
-    <div class="preview-screen">
-      <div class="preview-bar">
-        <div class="preview-bar-text"></div>
-      </div>
-      <div class="preview-grid">
-        <div class="preview-card">
-          <div class="preview-card-img"></div>
-          <div class="preview-card-body">
-            <div class="preview-card-price"></div>
-            <div class="preview-card-title"></div>
-          </div>
-        </div>
-        <div class="preview-card">
-          <div class="preview-card-img"></div>
-          <div class="preview-card-body">
-            <div class="preview-card-price"></div>
-            <div class="preview-card-title"></div>
-          </div>
-        </div>
-        <div class="preview-card">
-          <div class="preview-card-img"></div>
-          <div class="preview-card-body">
-            <div class="preview-card-price"></div>
-            <div class="preview-card-title"></div>
-          </div>
-        </div>
-        <div class="preview-card">
-          <div class="preview-card-img"></div>
-          <div class="preview-card-body">
-            <div class="preview-card-price"></div>
-            <div class="preview-card-title"></div>
-          </div>
-        </div>
-      </div>
+
+    <div class="preview-item">
+      <img src="https://i.ibb.co/5h9pJnbj/panel.png" alt="Panel administrador">
     </div>
+
+    <div class="preview-item">
+      <img src="https://i.ibb.co/C3gVHbky/carrito.png" alt="Pedidos y carrito">
+    </div>
+
   </div>
+
 </section>
 
 <!-- FEATURES -->
