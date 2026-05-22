@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Términos y Privacidad | IN-STORE</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --yellow:#ffe600;
+      --yellow-dark:#e6cf00;
+      --black:#111111;
+      --text:#222;
+      --sub:#666;
+      --bg:#f6f6f6;
+      --white:#ffffff;
+      --border:#e5e5e5;
+      --green:#1f9d55;
+      --radius:18px;
+      --shadow:0 8px 24px rgba(0,0,0,.08);
+    }
+
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+    }
+
+    body{
+      font-family:'Nunito', Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      line-height:1.6;
+    }
+
+    header{
+      background:var(--yellow);
+      padding:22px 16px;
+      box-shadow:0 4px 14px rgba(0,0,0,.10);
+      position:sticky;
+      top:0;
+      z-index:10;
+    }
+
+    .header-inner{
+      max-width:980px;
+      margin:auto;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+    }
+
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+    }
+
+    .brand h1{
+      font-size:1.25rem;
+      font-weight:900;
+      color:var(--black);
+      letter-spacing:-.3px;
+    }
+
+    .brand span{
+      font-size:.82rem;
+      font-weight:800;
+      color:#4a4300;
+    }
+
+    .back-btn{
+      background:var(--black);
+      color:var(--yellow);
+      text-decoration:none;
+      padding:10px 14px;
+      border-radius:999px;
+      font-weight:900;
+      font-size:.82rem;
+      white-space:nowrap;
+    }
+
+    main{
+      max-width:980px;
+      margin:22px auto;
+      padding:0 14px 50px;
+    }
+
+    .hero{
+      background:var(--white);
+      border-radius:var(--radius);
+      padding:24px;
+      box-shadow:var(--shadow);
+      margin-bottom:18px;
+      border:1px solid var(--border);
+    }
+
+    .hero h2{
+      font-size:1.5rem;
+      font-weight:900;
+      margin-bottom:8px;
+      letter-spacing:-.4px;
+    }
+
+    .hero p{
+      color:var(--sub);
+      font-size:.96rem;
+    }
+
+    .notice{
+      margin-top:16px;
+      background:#fff8c7;
+      border:1px solid #eadb76;
+      color:#5f5400;
+      padding:14px 16px;
+      border-radius:14px;
+      font-size:.92rem;
+      font-weight:800;
+    }
+
+    .tabs{
+      display:flex;
+      gap:10px;
+      margin:18px 0;
+      overflow-x:auto;
+      padding-bottom:2px;
+    }
+
+    .tabs a{
+      flex:0 0 auto;
+      text-decoration:none;
+      color:var(--black);
+      background:var(--white);
+      border:1px solid var(--border);
+      padding:10px 14px;
+      border-radius:999px;
+      font-size:.86rem;
+      font-weight:900;
+      box-shadow:0 3px 10px rgba(0,0,0,.04);
+    }
+
+    section{
+      background:var(--white);
+      border-radius:var(--radius);
+      padding:24px;
+      box-shadow:var(--shadow);
+      margin-bottom:18px;
+      border:1px solid var(--border);
+    }
+
+    section h2{
+      font-size:1.35rem;
+      font-weight:900;
+      margin-bottom:14px;
+      color:var(--black);
+      letter-spacing:-.3px;
+    }
+
+    section h3{
+      font-size:1rem;
+      font-weight:900;
+      margin-top:18px;
+      margin-bottom:8px;
+      color:var(--black);
+    }
+
+    section p{
+      font-size:.95rem;
+      color:#333;
+      margin-bottom:10px;
+    }
+
+    ul{
+      padding-left:20px;
+      margin:8px 0 12px;
+    }
+
+    li{
+      margin-bottom:7px;
+      font-size:.94rem;
+      color:#333;
+    }
+
+    .important{
+      background:#f7f7f7;
+      border:1px solid var(--border);
+      padding:14px;
+      border-radius:14px;
+      margin:14px 0;
+      font-weight:800;
+      color:#333;
+    }
+
+    .danger{
+      background:#fff0f0;
+      border:1px solid #ffc9c9;
+      color:#8a1f1f;
+    }
+
+    .success{
+      background:#eefaf3;
+      border:1px solid #bce7ca;
+      color:#155f35;
+    }
+
+    .mini{
+      font-size:.84rem;
+      color:var(--sub);
+      margin-top:10px;
+    }
+
+    footer{
+      max-width:980px;
+      margin:0 auto 30px;
+      padding:0 14px;
+      text-align:center;
+      color:var(--sub);
+      font-size:.84rem;
+    }
+
+    footer strong{
+      color:var(--black);
+    }
+
+    @media(max-width:600px){
+      .header-inner{
+        align-items:flex-start;
+      }
+
+      .brand h1{
+        font-size:1.05rem;
+      }
+
+      .brand span{
+        font-size:.75rem;
+      }
+
+      .back-btn{
+        padding:9px 12px;
+        font-size:.76rem;
+      }
+
+      .hero,
+      section{
+        padding:18px;
+      }
+
+      .hero h2{
+        font-size:1.25rem;
+      }
+
+      section h2{
+        font-size:1.16rem;
+      }
+
+      section h3{
+        font-size:.96rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <h1>IN-STORE</h1>
+      <span>Términos, condiciones y privacidad</span>
+    </div>
+
+    <a href="index.html" class="back-btn">Volver</a>
+  </div>
+</header>
+
+<main>
+
+  <div class="hero">
+    <h2>Información legal de uso</h2>
+    <p>
+      En esta página se detallan los términos de uso de IN-STORE y la forma en que se manejan los datos dentro de la plataforma.
+      El objetivo es dejar claras las responsabilidades de IN-STORE, de los comercios que utilizan el sistema y de los compradores que realizan consultas o pedidos.
+    </p>
+
+    <div class="notice">
+      IN-STORE es una herramienta digital para mostrar productos, organizar pedidos y facilitar el contacto entre comercios y compradores. IN-STORE no vende productos directamente, no realiza envíos y no actúa como intermediario financiero.
+    </div>
+
+    <p class="mini">
+      Última actualización: 2026.
+    </p>
+  </div>
+
+  <div class="tabs">
+    <a href="#terminos">Términos y Condiciones</a>
+    <a href="#privacidad">Política de Privacidad</a>
+    <a href="#responsabilidad">Responsabilidades</a>
+    <a href="#contacto">Contacto</a>
+  </div>
+
+  <section id="terminos">
+    <h2>Términos y Condiciones</h2>
+
+    <h3>1. Qué es IN-STORE</h3>
+    <p>
+      IN-STORE es una plataforma digital que permite a comercios, emprendedores o vendedores mostrar sus productos mediante un catálogo online, recibir pedidos por WhatsApp y organizar información básica relacionada con su actividad comercial.
+    </p>
+
+    <p>
+      IN-STORE funciona como una herramienta tecnológica de apoyo. No es una tienda propia, no es un marketplace, no es una entidad financiera y no interviene directamente en la operación comercial entre comprador y vendedor.
+    </p>
+
+    <h3>2. Aceptación de uso</h3>
+    <p>
+      Al utilizar una tienda, catálogo, panel, link de pago, formulario, página pública o cualquier funcionalidad asociada a IN-STORE, el usuario acepta estos términos y condiciones.
+    </p>
+
+    <p>
+      Si el usuario no está de acuerdo con estos términos, debe dejar de utilizar la plataforma.
+    </p>
+
+    <h3>3. Responsabilidad del comercio</h3>
+    <p>
+      Cada comercio, emprendedor o vendedor que utiliza IN-STORE es responsable de la información que carga y ofrece dentro de su catálogo.
+    </p>
+
+    <ul>
+      <li>Nombre, descripción e imágenes de productos.</li>
+      <li>Precios publicados.</li>
+      <li>Stock disponible.</li>
+      <li>Promociones, descuentos u ofertas.</li>
+      <li>Condiciones de venta.</li>
+      <li>Medios de pago aceptados.</li>
+      <li>Modalidad de entrega o envío.</li>
+      <li>Garantías, cambios y devoluciones.</li>
+      <li>Atención y comunicación con sus compradores.</li>
+    </ul>
+
+    <div class="important danger">
+      IN-STORE no se responsabiliza por productos ofrecidos por terceros, entregas, envíos, demoras, pagos, diferencias de precio, reclamos comerciales, garantías, cambios, devoluciones o cualquier inconveniente derivado de la relación entre el comercio y el comprador.
+    </div>
+
+    <h3>4. Relación entre comprador y vendedor</h3>
+    <p>
+      Toda compra, consulta, reserva, pedido, pago, entrega o acuerdo comercial se realiza directamente entre el comprador y el comercio responsable.
+    </p>
+
+    <p>
+      IN-STORE solo facilita el contacto, la visualización de productos y la organización del pedido. La concreción final de la operación queda bajo responsabilidad de las partes involucradas.
+    </p>
+
+    <h3>5. Pagos</h3>
+    <p>
+      Si una tienda utiliza links de pago, datos bancarios, alias, CBU, transferencias o cualquier medio de cobro, dichos datos pertenecen al comercio responsable.
+    </p>
+
+    <p>
+      IN-STORE no procesa pagos de compradores finales, no retiene dinero, no garantiza transferencias, no administra devoluciones y no actúa como intermediario financiero.
+    </p>
+
+    <h3>6. Envíos y entregas</h3>
+    <p>
+      Los envíos, entregas, retiros, puntos de encuentro o cualquier modalidad logística son acordados directamente entre el comercio y el comprador.
+    </p>
+
+    <p>
+      IN-STORE no realiza envíos, no coordina entregas, no controla transportes ni garantiza tiempos de entrega.
+    </p>
+
+    <h3>7. Uso permitido de la plataforma</h3>
+    <p>
+      El usuario se compromete a utilizar IN-STORE de manera legal, correcta y responsable.
+    </p>
+
+    <p>No está permitido utilizar la plataforma para:</p>
+
+    <ul>
+      <li>Publicar productos ilegales o prohibidos.</li>
+      <li>Realizar estafas, engaños o actividades fraudulentas.</li>
+      <li>Publicar información falsa, confusa o malintencionada.</li>
+      <li>Suplantar identidades o comercios.</li>
+      <li>Distribuir contenido ofensivo, violento, discriminatorio o dañino.</li>
+      <li>Afectar la seguridad, funcionamiento o reputación de la plataforma.</li>
+    </ul>
+
+    <div class="important">
+      IN-STORE puede suspender, limitar o eliminar el acceso a una tienda o usuario si detecta un uso indebido, ilegal, fraudulento o contrario a estos términos.
+    </div>
+
+    <h3>8. Disponibilidad del servicio</h3>
+    <p>
+      IN-STORE busca mantener la plataforma disponible y funcionando correctamente, pero no garantiza disponibilidad absoluta e ininterrumpida.
+    </p>
+
+    <p>
+      Pueden existir interrupciones por mantenimiento, actualizaciones, problemas técnicos, servicios externos, conexión a internet, proveedores de hosting, Firebase, WhatsApp u otras herramientas utilizadas para el funcionamiento del sistema.
+    </p>
+
+    <h3>9. Cambios en el sistema</h3>
+    <p>
+      IN-STORE puede mejorar, modificar, agregar o eliminar funcionalidades del sistema con el objetivo de mantener, optimizar o evolucionar el servicio.
+    </p>
+
+    <h3>10. Planes, precios y activaciones</h3>
+    <p>
+      Los planes, precios, beneficios, límites y condiciones comerciales pueden variar según la versión del servicio, acuerdos particulares o promociones vigentes.
+    </p>
+
+    <p>
+      El acceso a determinadas funciones puede depender del plan contratado por cada comercio.
+    </p>
+
+    <h3>11. Limitación de responsabilidad</h3>
+    <p>
+      IN-STORE no será responsable por daños, pérdidas, reclamos, conflictos comerciales, falta de entrega, incumplimientos, productos defectuosos, errores publicados por el comercio o cualquier situación derivada del uso que terceros hagan de la plataforma.
+    </p>
+
+    <p>
+      El comercio es el único responsable frente a sus compradores por los productos y servicios que ofrece.
+    </p>
+  </section>
+
+  <section id="privacidad">
+    <h2>Política de Privacidad</h2>
+
+    <h3>1. Datos que puede manejar IN-STORE</h3>
+    <p>
+      IN-STORE no busca recopilar datos sensibles ni información innecesaria de los usuarios. Sin embargo, para que el sistema funcione correctamente, puede almacenar o procesar información básica relacionada con el uso de la plataforma.
+    </p>
+
+    <p>Esta información puede incluir:</p>
+
+    <ul>
+      <li>Nombre de tienda o comercio.</li>
+      <li>Número de WhatsApp de contacto del comercio.</li>
+      <li>Datos de productos cargados por el comercio.</li>
+      <li>Pedidos realizados desde el catálogo.</li>
+      <li>Nombre o datos básicos ingresados por un comprador al realizar un pedido, si el sistema los solicita.</li>
+      <li>Notas o aclaraciones de pedidos.</li>
+      <li>Datos necesarios para el funcionamiento del panel administrativo.</li>
+    </ul>
+
+    <div class="important success">
+      IN-STORE no vende datos personales, no comercializa información de usuarios y no utiliza los datos para fines ajenos al funcionamiento del sistema.
+    </div>
+
+    <h3>2. Datos de compradores</h3>
+    <p>
+      Cuando un comprador realiza un pedido, consulta o contacto a través de una tienda IN-STORE, la información ingresada se utiliza para que el comercio pueda atender ese pedido.
+    </p>
+
+    <p>
+      Los datos del comprador quedan asociados al comercio responsable de la tienda y son utilizados únicamente para fines relacionados con la operación solicitada.
+    </p>
+
+    <h3>3. Datos del comercio</h3>
+    <p>
+      Los comercios que utilizan IN-STORE pueden cargar información necesaria para configurar su catálogo, recibir pedidos y mostrar sus productos.
+    </p>
+
+    <p>
+      El comercio es responsable de mantener actualizada y correcta la información que publica.
+    </p>
+
+    <h3>4. Uso de Firebase y servicios externos</h3>
+    <p>
+      IN-STORE puede utilizar servicios externos como Firebase, hosting web, WhatsApp, herramientas de almacenamiento de imágenes u otros servicios técnicos necesarios para que la plataforma funcione.
+    </p>
+
+    <p>
+      Estos servicios pueden procesar datos técnicos mínimos según sus propias políticas y condiciones.
+    </p>
+
+    <h3>5. WhatsApp</h3>
+    <p>
+      Muchos pedidos o consultas se envían mediante WhatsApp. Al hacer clic en botones de WhatsApp, el usuario sale del entorno directo de IN-STORE y continúa la comunicación dentro de WhatsApp.
+    </p>
+
+    <p>
+      Las conversaciones, datos compartidos y acuerdos realizados por WhatsApp quedan bajo responsabilidad del comprador, del comercio y de las condiciones propias de WhatsApp.
+    </p>
+
+    <h3>6. Seguridad</h3>
+    <p>
+      IN-STORE busca mantener medidas razonables de seguridad para proteger la información del sistema, incluyendo controles de acceso, autenticación y reglas de base de datos.
+    </p>
+
+    <p>
+      Aun así, ningún sistema digital puede garantizar seguridad absoluta. Por eso se recomienda a los comercios proteger sus accesos, contraseñas y dispositivos.
+    </p>
+
+    <h3>7. Conservación de datos</h3>
+    <p>
+      Los datos pueden conservarse mientras la tienda se encuentre activa o mientras sean necesarios para el funcionamiento del sistema, soporte, historial de pedidos o cumplimiento de obligaciones aplicables.
+    </p>
+
+    <h3>8. Eliminación o modificación de datos</h3>
+    <p>
+      Un comercio puede solicitar la modificación, corrección o eliminación de información asociada a su tienda, siempre que sea técnicamente posible y no afecte obligaciones pendientes o registros necesarios.
+    </p>
+
+    <h3>9. Datos sensibles</h3>
+    <p>
+      IN-STORE no solicita intencionalmente datos sensibles como información médica, política, religiosa, financiera privada del comprador u otra información delicada que no sea necesaria para realizar un pedido.
+    </p>
+
+    <p>
+      Se recomienda a los usuarios no compartir información sensible dentro de notas, pedidos o mensajes.
+    </p>
+
+    <h3>10. Compartir información con terceros</h3>
+    <p>
+      IN-STORE no comparte información con terceros para venta de datos o publicidad externa.
+    </p>
+
+    <p>
+      Solo podría compartirse información si fuera requerido por una autoridad competente, obligación legal o necesidad técnica vinculada al funcionamiento del servicio.
+    </p>
+  </section>
+
+  <section id="responsabilidad">
+    <h2>Responsabilidad sobre productos, pagos y entregas</h2>
+
+    <p>
+      Para evitar confusiones, se deja expresamente aclarado que IN-STORE no es propietario, fabricante, distribuidor ni vendedor de los productos publicados por los comercios que usan la plataforma.
+    </p>
+
+    <ul>
+      <li>Los productos pertenecen al comercio que los publica.</li>
+      <li>Los precios son definidos por cada comercio.</li>
+      <li>El stock es informado y administrado por cada comercio.</li>
+      <li>Los pagos se acuerdan entre comprador y vendedor.</li>
+      <li>Los envíos o entregas son responsabilidad del comercio.</li>
+      <li>Los cambios, garantías y devoluciones deben tratarse directamente con el comercio.</li>
+    </ul>
+
+    <div class="important danger">
+      Antes de realizar un pago o confirmar una compra, el comprador debe verificar directamente con el comercio las condiciones del producto, precio, entrega, garantía y forma de pago.
+    </div>
+  </section>
+
+  <section id="contacto">
+    <h2>Contacto</h2>
+
+    <p>
+      Para consultas relacionadas con el funcionamiento técnico de IN-STORE, soporte de la plataforma o información sobre el servicio, el usuario puede comunicarse con el equipo responsable de IN-STORE.
+    </p>
+
+    <p>
+      Para reclamos sobre productos, entregas, pagos, cambios, garantías o pedidos específicos, el comprador debe comunicarse directamente con el comercio donde realizó la consulta o compra.
+    </p>
+
+    <div class="important">
+      IN-STORE atiende consultas sobre la plataforma. Cada comercio atiende consultas sobre sus productos y ventas.
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p><strong>IN-STORE</strong> · Plataforma digital para catálogos, pedidos y gestión comercial.</p>
+  <p>El uso del sistema implica la aceptación de estos Términos y Condiciones y de la Política de Privacidad.</p>
+</footer>
+
+</body>
+</html>
