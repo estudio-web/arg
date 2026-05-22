@@ -104,6 +104,21 @@ body{font-family:'Nunito',Arial,sans-serif;background:var(--bg);color:var(--text
 .btn-wa-order svg{width:16px;height:16px;fill:#fff}
 .btn-pay-order{padding:9px 14px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius);font-family:inherit;font-size:.82rem;font-weight:800;cursor:pointer;transition:background .15s}
 .btn-pay-order:hover{background:var(--blue-dk)}
+.btn-pay-order.locked{opacity:.55;filter:saturate(.7)}
+.btn-pay-order.locked:hover{background:var(--blue)}
+.payment-proof-link.locked{opacity:.6;filter:saturate(.7);cursor:pointer}
+.payment-proof-link.locked:hover{background:var(--blue)}
+
+/* Upgrade modal (upsell) */
+.upgrade-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:340;padding:20px}
+.upgrade-overlay.open{display:flex}
+.upgrade-box{background:#fff;border-radius:18px;padding:22px 18px 18px;width:100%;max-width:360px;text-align:center;box-shadow:0 14px 40px rgba(0,0,0,.22)}
+.upgrade-icon{font-size:2.4rem;margin-bottom:8px}
+.upgrade-box h3{font-size:1rem;font-weight:900;margin-bottom:6px}
+.upgrade-box p{font-size:.86rem;color:#666;line-height:1.5;margin-bottom:14px}
+.upgrade-actions{display:flex;flex-direction:column;gap:8px}
+.btn-upgrade-wa{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px 14px;background:var(--green);color:#fff;border:none;border-radius:var(--radius);font-family:inherit;font-size:.9rem;font-weight:900;cursor:pointer;text-decoration:none}
+.btn-upgrade-close{width:100%;padding:11px;background:var(--bg);border:none;border-radius:var(--radius);font-family:inherit;font-weight:800;cursor:pointer}
 .btn-del-order{padding:9px 14px;background:#fef2f2;color:var(--red);border:1px solid #fecaca;border-radius:var(--radius);font-family:inherit;font-size:.82rem;font-weight:800;cursor:pointer;transition:background .15s}
 .btn-del-order:hover{background:#fee2e2}
 
@@ -235,6 +250,22 @@ body{font-family:'Nunito',Arial,sans-serif;background:var(--bg);color:var(--text
   </div>
 </div>
 
+<!-- UPGRADE MODAL (locked features) -->
+<div class="upgrade-overlay" id="upgradeOverlay">
+  <div class="upgrade-box">
+    <div class="upgrade-icon">ATENCION</div>
+    <h3 id="upgradeTitle">Funcion bloqueada</h3>
+    <p id="upgradeText">Actualiza tu plan para usar esta herramienta.</p>
+    <div class="upgrade-actions">
+      <a class="btn-upgrade-wa" id="upgradeWaBtn" href="#" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.974 2C6.465 2 2 6.465 2 11.974c0 1.87.516 3.622 1.416 5.12L2 22l5.066-1.388A9.929 9.929 0 0011.974 22C17.483 22 22 17.535 22 12.026 22 6.465 17.483 2 11.974 2z"/></svg>
+        Consultar actualizacion por WhatsApp
+      </a>
+      <button class="btn-upgrade-close" id="upgradeCloseBtn" type="button">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
@@ -273,6 +304,16 @@ function canUsePayments(plan){
   const name = normalizePlanName(plan);
   return name === "pro" || name === "professional" || name === "premium" || name === "enterprise";
 }
+function openUpgradeModal(featureLabel, requiredPlanLabel){
+  const title = `Actualiza tu plan para usar ${featureLabel}`;
+  const current = normalizePlanName(planData);
+  $("upgradeTitle").textContent = title;
+  $("upgradeText").textContent = `Tu plan actual (${current || "trial"}) no incluye esta herramienta. Recomendado: ${requiredPlanLabel}.`;
+  const msg = `Hola! Quiero actualizar mi plan para habilitar ${featureLabel}. Mi tienda: *${tenantId || "-"}*`;
+  $("upgradeWaBtn").href = `https://wa.me/${APP_CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`;
+  $("upgradeOverlay").classList.add("open");
+}
+function closeUpgradeModal(){ $("upgradeOverlay").classList.remove("open"); }
 
 /* ── Auth ── */
 onAuthStateChanged(auth, async user => {
@@ -424,7 +465,7 @@ function render() {
             <option value="entregado"  ${order.status==="entregado"  ? "selected":""}>📬 Entregado</option>
             <option value="cancelado"  ${order.status==="cancelado"  ? "selected":""}>❌ Cancelado</option>
           </select>
-          ${paymentsAllowed ? `<button class="btn-pay-order" data-order="${order.id}">Generar pago</button>` : ``}
+          <button class="btn-pay-order ${paymentsAllowed ? "" : "locked"}" data-order="${order.id}" data-locked="${paymentsAllowed ? "0" : "1"}">Generar pago</button>
           <button class="btn-wa-order" data-order="${order.id}">
             <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.974 2C6.465 2 2 6.465 2 11.974c0 1.87.516 3.622 1.416 5.12L2 22l5.066-1.388A9.929 9.929 0 0011.974 22C17.483 22 22 17.535 22 12.026 22 6.465 17.483 2 11.974 2zm0 18.184a8.173 8.173 0 01-4.296-1.216l-.308-.183-3.006.822.855-2.928-.2-.32a8.173 8.173 0 01-1.258-4.385c0-4.518 3.674-8.192 8.213-8.192 4.54 0 8.213 3.674 8.213 8.192 0 4.539-3.674 8.21-8.213 8.21z"/></svg>
             WhatsApp
@@ -457,7 +498,18 @@ function render() {
     };
 
     const payBtn = card.querySelector(".btn-pay-order");
-    if (payBtn) payBtn.onclick = () => openPaymentModal(order, currency);
+    if (payBtn) payBtn.onclick = () => {
+      if (!paymentsAllowed) { openUpgradeModal("links de pago", "Plan Pro o Premium"); return; }
+      openPaymentModal(order, currency);
+    };
+
+    // Comprobante bloqueado (upsell)
+    card.querySelectorAll(".payment-proof-link.locked").forEach(a => {
+      a.onclick = (e) => {
+        e.preventDefault();
+        openUpgradeModal("comprobantes y links de pago", "Plan Pro o Premium");
+      };
+    });
 
     // Delete
     card.querySelector(".btn-del-order").onclick = () => {
@@ -530,7 +582,10 @@ function renderPaymentDetails(order, currency) {
     <div class="payment-card">
       <div class="payment-card-head">
         <div class="payment-card-title">Comprobante de pago</div>
-        ${proofUrl ? `<a class="payment-proof-link" href="${esc(proofUrl)}" target="_blank" rel="noopener">Ver comprobante</a>` : ""}
+        ${proofUrl ? (paymentsAllowed
+          ? `<a class="payment-proof-link" href="${esc(proofUrl)}" target="_blank" rel="noopener">Ver comprobante</a>`
+          : `<a class="payment-proof-link locked" href="#" data-url="${esc(proofUrl)}">Ver comprobante</a>`
+        ) : ""}
       </div>
       <div class="payment-grid">
         <div class="payment-field">
@@ -590,6 +645,7 @@ function refreshPaymentPreview() {
 
 function openPaymentModal(order, currency) {
   if (!paymentsAllowed) {
+    openUpgradeModal("links de pago", "Plan Pro o Premium");
     showToast("Los links de pago estÃ¡n disponibles solo en planes Pro y Premium.");
     return;
   }
@@ -619,6 +675,8 @@ $("confirmOk").onclick = async () => {
 
 $("paymentClose").onclick = closePaymentModal;
 $("paymentModal").onclick = e => { if (e.target.id === "paymentModal") closePaymentModal(); };
+$("upgradeCloseBtn").onclick = closeUpgradeModal;
+$("upgradeOverlay").onclick = e => { if (e.target.id === "upgradeOverlay") closeUpgradeModal(); };
 $("paymentAmount").addEventListener("input", refreshPaymentPreview);
 $("paymentCustomerWa").addEventListener("input", refreshPaymentPreview);
 $("paymentCopyLink").onclick = async () => {
