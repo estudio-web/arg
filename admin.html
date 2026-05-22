@@ -23,21 +23,27 @@
  body{font-family:'Nunito',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 
 /* HEADER */
-.header{position:fixed;top:0;left:0;right:0;background:var(--yellow);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;z-index:100;box-shadow:0 2px 6px rgba(0,0,0,.15)}
-.header-brand{font-size:1.05rem;font-weight:900;display:flex;align-items:center;gap:6px}
-.header-actions{display:flex;gap:6px;align-items:center}
-.btn-icon{display:flex;align-items:center;gap:5px;border:none;border-radius:var(--radius);padding:7px 11px;font-family:inherit;font-size:.8rem;font-weight:800;cursor:pointer;transition:background .15s}
+  .header{position:fixed;top:0;left:0;right:0;background:var(--yellow);min-height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;z-index:100;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+  .header-brand{font-size:1.05rem;font-weight:900;display:flex;align-items:center;gap:6px}
+  .header-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;min-width:0}
+  .btn-icon{display:flex;align-items:center;gap:5px;border:none;border-radius:var(--radius);padding:7px 11px;font-family:inherit;font-size:.8rem;font-weight:800;cursor:pointer;transition:background .15s}
 .btn-logout{background:rgba(0,0,0,.1);color:var(--text)}
 .btn-logout:hover{background:rgba(0,0,0,.18)}
 .btn-share{background:#25d366;color:#fff}
 .btn-share:hover{background:#1faa52}
 .btn-orders{background:var(--blue);color:#fff;position:relative}
 .btn-orders:hover{background:var(--blue-dk)}
-.btn-payments{background:var(--orange);color:#fff}
-.btn-payments:hover{background:#ea580c}
-.btn-icon svg{width:15px;height:15px;fill:currentColor;flex-shrink:0}
-.orders-badge{background:var(--red);color:#fff;font-size:.6rem;font-weight:900;min-width:16px;height:16px;border-radius:999px;display:flex;align-items:center;justify-content:center;padding:0 3px;position:absolute;top:-4px;right:-4px}
-@media(max-width:500px){.btn-icon span{display:none}}
+  .btn-payments{background:var(--orange);color:#fff}
+  .btn-payments:hover{background:#ea580c}
+  .btn-resellers{background:#111;color:var(--yellow)}
+  .btn-resellers:hover{background:#000}
+  .btn-icon svg{width:15px;height:15px;fill:currentColor;flex-shrink:0}
+  .orders-badge{background:var(--red);color:#fff;font-size:.6rem;font-weight:900;min-width:16px;height:16px;border-radius:999px;display:flex;align-items:center;justify-content:center;padding:0 3px;position:absolute;top:-4px;right:-4px}
+  @media(max-width:500px){.btn-icon span{display:none}}
+  @media(max-width:420px){
+    .header{padding:0 10px}
+    .btn-icon{padding:7px 9px;min-width:38px;justify-content:center}
+  }
 
 /* PLAN BANNER */
 .plan-banner{display:none;padding:10px 14px;font-size:.83rem;font-weight:700;border-bottom:2px solid transparent;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
@@ -369,6 +375,10 @@
         <svg viewBox="0 0 24 24"><path d="M21 7H3V5h18v2zm0 3H3v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9zM7 17H5v-2h2v2zm4 0H9v-2h2v2z"/></svg>
         <span>Pagos</span>
       </button>
+      <button class="btn-icon btn-resellers" id="btnResellers" style="display:none">
+        <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        <span>Vendedores</span>
+      </button>
       <button class="btn-icon btn-share" id="shareCatalogBtn">
         <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a2.5 2.5 0 000-1.39l7-4.11A2.99 2.99 0 0018 7.91 3 3 0 1015 5a2.9 2.9 0 00.04.49l-7 4.12a3 3 0 100 4.78l7.05 4.14c-.03.15-.05.31-.05.47a3 3 0 103-2.92z"/></svg>
         <span>Compartir</span>
@@ -611,7 +621,6 @@ import {
   getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { firebaseConfig, MEDIATOKEN, APP_CONFIG, PLANS } from "./firebase-config.js";
-import { canUsePayments, getImageLimitByPlan, getProductImages } from "./plan-helpers.js";
 
 const app  = initializeApp(firebaseConfig);
 const db   = getFirestore(app);
@@ -636,6 +645,27 @@ let productImagesDraft = [];
 
 const $ = id => document.getElementById(id);
 
+function normalizePlanName(plan){
+  return String(plan?.planName || "trial").toLowerCase();
+}
+function canUsePayments(plan){
+  const name = normalizePlanName(plan);
+  return name === "pro" || name === "professional" || name === "premium" || name === "enterprise";
+}
+function getImageLimitByPlan(plan){
+  const name = normalizePlanName(plan);
+  if(name === "premium" || name === "enterprise") return 5;
+  if(name === "pro" || name === "professional") return 3;
+  return 1;
+}
+function getProductImages(product = {}){
+  if(Array.isArray(product.images) && product.images.length){
+    return product.images.filter(Boolean).slice(0,5);
+  }
+  if(product.imageUrl) return [product.imageUrl];
+  return [];
+}
+
 /* ══ PLAN HELPERS ══ */
 function getPlanStatus(plan) {
   if (!plan || !plan.planName) return { ok: false, expired: true, suspended: false, daysLeft: 0 };
@@ -656,7 +686,7 @@ function canAddProduct(plan, currentCount) {
   return currentCount < (plan.productLimit || 3);
 }
 
-// Helpers compartidos importados desde plan-helpers.js
+// Helpers compartidos (embebidos) para evitar dependencias 404 en GitHub Pages
 
 function renderDashboard() {
   const currency = ($("cfgCurrency")?.value || APP_CONFIG.currencySymbol || "$").trim() || "$";
@@ -800,8 +830,11 @@ function renderPlanBanner() {
   const banner  = $("planBanner");
   const btnRenew= $("btnRenewBanner");
   const paymentsAllowed = canUsePayments(planData);
+  const planNameNorm = normalizePlanName(planData);
+  const isPremium = planNameNorm === "premium" || planNameNorm === "enterprise";
 
 $("btnPayments").style.display = paymentsAllowed ? "" : "none";
+  $("btnResellers").style.display = isPremium ? "" : "none";
 
   $("planBadgeName").textContent = plan.name || planData.planName;
 
@@ -1207,6 +1240,7 @@ $("shareCatalogBtn").onclick = () => {
 $("btnOrders").onclick = () => { window.location.href = `orders.html?t=${tenantId}`; };
 $("btnInternal").onclick = () => { window.location.href = `internal.html?t=${tenantId}`; };
 $("btnPayments").onclick = () => openPaymentsModal();
+$("btnResellers").onclick = () => { window.location.href = `resellers.html?t=${tenantId}`; };
 
 function formatPaymentMoney(value) {
   const currency = $("cfgCurrency").value.trim() || APP_CONFIG.currencySymbol;
