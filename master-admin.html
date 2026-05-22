@@ -284,10 +284,10 @@ tr:hover td{background:rgba(255,255,255,.03)}
             <div>
               <label style="font-size:.72rem;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:5px">Plan</label>
               <select id="planSelect" class="filter-sel" style="width:100%">
-                <option value="trial">Trial (14 días, 3 productos)</option>
-                <option value="basic">Básico (30 días, 60 productos)</option>
-                <option value="pro">Pro (30 días, 150 productos)</option>
-                <option value="premium">Premium (30 días, ilimitado)</option>
+                <option value="trial">Trial: 3 productos, 1 imagen, sin links de pago</option>
+                <option value="basic">Básico/Starter: 60 productos, 1 imagen, sin links de pago</option>
+                <option value="pro">Pro/Professional: 150 productos, 3 imágenes, links de pago</option>
+                <option value="premium">Premium/Enterprise: 500 productos, 5 imágenes, links de pago</option>
               </select>
             </div>
           </div>
@@ -372,8 +372,8 @@ tr:hover td{background:rgba(255,255,255,.03)}
         <div class="field-row" style="margin-bottom:10px">
           <div class="mfield" style="margin:0"><label>Plan</label>
             <select id="tmPlan">
-              <option value="trial">Trial</option><option value="basic">Básico</option>
-              <option value="pro">Pro</option><option value="premium">Premium</option>
+              <option value="trial">Trial</option><option value="basic">Básico/Starter</option>
+              <option value="pro">Pro/Professional</option><option value="premium">Premium/Enterprise</option>
             </select>
           </div>
           <div class="mfield" style="margin:0"><label>Días</label><input id="tmDays" type="number" min="1" placeholder="30" /></div>
@@ -423,8 +423,8 @@ tr:hover td{background:rgba(255,255,255,.03)}
       <div class="field-row">
         <div class="mfield"><label>Plan inicial</label>
           <select id="ntPlan">
-            <option value="trial">Trial (14d)</option><option value="basic">Básico</option>
-            <option value="pro">Pro</option><option value="premium">Premium</option>
+            <option value="trial">Trial</option><option value="basic">Básico/Starter</option>
+            <option value="pro">Pro/Professional</option><option value="premium">Premium/Enterprise</option>
           </select>
         </div>
         <div class="mfield"><label>Días</label><input id="ntDays" type="number" placeholder="14" /></div>
@@ -469,13 +469,17 @@ import {
   deleteDoc, onSnapshot, serverTimestamp, writeBatch, collectionGroup, query, limit
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {
-  getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+  getAuth, setPersistence, inMemoryPersistence,
+  signInWithEmailAndPassword, onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { firebaseConfig, APP_CONFIG, PLANS } from "./firebase-config.js";
 
-const app  = initializeApp(firebaseConfig);
+// Importante: usamos un Auth aislado en memoria para que el master login
+// no pise la sesión del admin en otras pestañas (misma origin).
+const app  = initializeApp(firebaseConfig, "master-admin");
 const db   = getFirestore(app);
 const auth = getAuth(app);
+setPersistence(auth, inMemoryPersistence).catch(() => {});
 
 // Global state
 let allUsers   = [];
@@ -490,6 +494,8 @@ $("loginBtn").onclick = async () => {
   $("loginStatus").textContent = "";
   $("loginBtn").textContent = "Ingresando…";
   try {
+    // Asegura que el login master sea solo de esta pestaña y no afecte otras sesiones.
+    await setPersistence(auth, inMemoryPersistence);
     const cred = await signInWithEmailAndPassword(auth, $("loginEmail").value.trim(), $("loginPassword").value);
     // Verify master role
     const snap = await getDoc(doc(db, `users/${cred.user.uid}`));
@@ -507,15 +513,23 @@ $("loginBtn").onclick = async () => {
 $("loginPassword").addEventListener("keydown", e => { if (e.key === "Enter") $("loginBtn").click(); });
 $("logoutBtn").onclick = () => signOut(auth);
 
-onAuthStateChanged(auth, async user => {
-  if (user) {
-    const snap = await getDoc(doc(db, `users/${user.uid}`));
-    if (!snap.exists() || snap.data().role !== "master") { signOut(auth); return; }
-    $("loginScreen").style.display = "none";
-    $("app").style.display = "block";
-    loadAll();
-  } else {
-    $("loginScreen").style.display = "flex";
+  onAuthStateChanged(auth, async user => {
+    if (user) {
+      const snap = await getDoc(doc(db, `users/${user.uid}`));
+      const role = snap.exists() ? snap.data().role : null;
+      console.log("[master-admin] auth.uid", user.uid, "role", role);
+      if (!snap.exists() || role !== "master") {
+        $("loginScreen").style.display = "flex";
+        $("app").style.display = "none";
+        $("loginStatus").textContent = "Acceso denegado: este usuario no es master.";
+        await signOut(auth);
+        return;
+      }
+      $("loginScreen").style.display = "none";
+      $("app").style.display = "block";
+      loadAll();
+    } else {
+      $("loginScreen").style.display = "flex";
     $("app").style.display = "none";
   }
 });
@@ -539,18 +553,38 @@ async function loadAll() {
   renderPlansTable();
 }
 
-async function loadUsers() {
-  try {
-    const snap = await getDocs(collection(db, "users"));
-    allUsers = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
-  } catch(e) { console.error("loadUsers", e); }
-}
+    async function loadUsers() {
+      try {
+        const me = auth.currentUser;
+        if (!me) return;
+
+        // Sanity: si no puedo leer mi propio doc, las rules publicadas estan rotas.
+        try {
+          const mySnap = await getDoc(doc(db, `users/${me.uid}`));
+          console.log("[master-admin] my user doc exists?", mySnap.exists(), "role", mySnap.data()?.role);
+        } catch (e) {
+          console.error("[master-admin] cannot read own user doc", e);
+        }
+
+        // LIST sobre /users (solo master)
+        const snap = await getDocs(collection(db, "users"));
+        allUsers = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+      } catch(e) {
+        console.error("loadUsers", e);
+        showToast("Sin permisos para listar usuarios. Revisa Firestore Rules publicadas.");
+      }
+    }
 
 async function loadTenants() {
   allTenants = [];
   try {
-    // Get all unique tenantIds from users
-    const tenantIds = [...new Set(allUsers.map(u => u.tenantId).filter(Boolean))];
+    // Importante: en Firestore pueden existir subcolecciones (settings/products/orders)
+    // aunque el doc raíz tenants/{tenantId} NO exista. Por eso armamos el listado desde:
+    // 1) users[].tenantId (fuente histórica) y 2) docs reales en /tenants.
+    const tenantsSnap = await getDocs(collection(db, "tenants"));
+    const idsFromTenants = tenantsSnap.docs.map(d => d.id);
+    const idsFromUsers = allUsers.map(u => u.tenantId).filter(Boolean);
+    const tenantIds = [...new Set([...idsFromTenants, ...idsFromUsers])];
 
     await Promise.all(tenantIds.map(async tid => {
       try {
@@ -577,7 +611,15 @@ async function loadTenants() {
           ownerUid:     owner?.uid   || "",
         });
       } catch(e) {
-        allTenants.push({ tenantId: tid, config: {}, plan: null, productCount: 0, orderCount: 0 });
+        allTenants.push({
+          tenantId: tid,
+          config: {},
+          plan: null,
+          productCount: 0,
+          orderCount: 0,
+          ownerEmail: "",
+          ownerUid: ""
+        });
       }
     }));
   } catch(e) { console.error("loadTenants", e); }
@@ -648,7 +690,8 @@ function renderTenants(list = null) {
     const ps   = getPlanStatus(t.plan);
     const name = (t.config.storeName || "").toLowerCase();
     const tid  = t.tenantId.toLowerCase();
-    if (q && !name.includes(q) && !tid.includes(q) && !t.ownerEmail.toLowerCase().includes(q)) return false;
+    const ownerEmail = (t.ownerEmail || "").toLowerCase();
+    if (q && !name.includes(q) && !tid.includes(q) && !ownerEmail.includes(q)) return false;
     if (filt === "active"    && (!ps.ok || ps.suspended)) return false;
     if (filt === "trial"     && !t.plan?.isTrial) return false;
     if (filt === "expired"   && !ps.expired) return false;
