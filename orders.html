@@ -246,6 +246,7 @@ import {
   getAuth, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { firebaseConfig, APP_CONFIG, PLANS } from "./firebase-config.js";
+import { canUsePayments } from "./plan-helpers.js";
 
 const app  = initializeApp(firebaseConfig);
 const db   = getFirestore(app);
@@ -259,6 +260,8 @@ let activePaymentFilter = "all";
 let tenantConfig = {};
 let confirmCb  = null;
 let currentPaymentOrder = null;
+let planData = null;
+let paymentsAllowed = false;
 
 const $ = id => document.getElementById(id);
 window.approvePayment = approvePayment;
@@ -284,6 +287,8 @@ async function loadTenantConfig() {
   } catch {}
   try {
     const planSnap = await getDoc(doc(db, `tenants/${tenantId}/settings/plan`));
+    planData = planSnap.exists() ? planSnap.data() : null;
+    paymentsAllowed = canUsePayments(planData);
     if (planSnap.exists() && planSnap.data().status === "suspended") {
       document.querySelector("main").innerHTML = `<div style="text-align:center;padding:60px 16px;color:#666"><div style="font-size:2.5rem">⛔</div><h2 style="margin:10px 0 6px">Cuenta suspendida</h2><p>Contactá al soporte para renovar tu plan.</p></div>`;
     }
@@ -391,7 +396,7 @@ function render() {
         <div class="order-items">
           ${(order.items || []).map(item => `
             <div class="order-item-row">
-              <img class="order-item-thumb" src="${esc(item.imageUrl || placeholder(item.title))}" alt="${esc(item.title)}"
+              <img class="order-item-thumb" src="${esc(((item.images && item.images[0]) || item.imageUrl) || placeholder(item.title))}" alt="${esc(item.title)}"
                    onerror="this.src='${placeholder(item.title)}'">
               <div class="order-item-info">
                 <div class="order-item-title">${esc(item.title)}</div>
@@ -412,7 +417,7 @@ function render() {
             <option value="entregado"  ${order.status==="entregado"  ? "selected":""}>📬 Entregado</option>
             <option value="cancelado"  ${order.status==="cancelado"  ? "selected":""}>❌ Cancelado</option>
           </select>
-          <button class="btn-pay-order" data-order="${order.id}">Generar pago</button>
+          ${paymentsAllowed ? `<button class="btn-pay-order" data-order="${order.id}">Generar pago</button>` : ``}
           <button class="btn-wa-order" data-order="${order.id}">
             <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.974 2C6.465 2 2 6.465 2 11.974c0 1.87.516 3.622 1.416 5.12L2 22l5.066-1.388A9.929 9.929 0 0011.974 22C17.483 22 22 17.535 22 12.026 22 6.465 17.483 2 11.974 2zm0 18.184a8.173 8.173 0 01-4.296-1.216l-.308-.183-3.006.822.855-2.928-.2-.32a8.173 8.173 0 01-1.258-4.385c0-4.518 3.674-8.192 8.213-8.192 4.54 0 8.213 3.674 8.213 8.192 0 4.539-3.674 8.21-8.213 8.21z"/></svg>
             WhatsApp
@@ -444,7 +449,8 @@ function render() {
       window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, "_blank");
     };
 
-    card.querySelector(".btn-pay-order").onclick = () => openPaymentModal(order, currency);
+    const payBtn = card.querySelector(".btn-pay-order");
+    if (payBtn) payBtn.onclick = () => openPaymentModal(order, currency);
 
     // Delete
     card.querySelector(".btn-del-order").onclick = () => {
@@ -576,6 +582,10 @@ function refreshPaymentPreview() {
 }
 
 function openPaymentModal(order, currency) {
+  if (!paymentsAllowed) {
+    showToast("Los links de pago estÃ¡n disponibles solo en planes Pro y Premium.");
+    return;
+  }
   currentPaymentOrder = order;
   $("paymentOrderRef").textContent = `Pedido #${order.id.slice(-6).toUpperCase()} • Total actual ${currency}${(order.total || 0).toLocaleString()}`;
   $("paymentAmount").value = Number(order.total || 0);
