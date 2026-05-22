@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<link rel="icon" href="data:," />
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>Admin – IN-STORE</title>
@@ -616,6 +617,8 @@ const app  = initializeApp(firebaseConfig);
 const db   = getFirestore(app);
 const auth = getAuth(app);
 
+console.log("[admin] module loaded ok");
+
 let tenantId     = null;
 let products     = [];
 let categories   = [];
@@ -695,8 +698,13 @@ $("loginBtn").onclick = async () => {
   $("loginBtn").textContent = "Ingresando…";
   try {
     await signInWithEmailAndPassword(auth, $("loginEmail").value.trim(), $("loginPassword").value);
-  } catch {
-    $("loginStatus").textContent = "Email o contraseña incorrectos.";
+  } catch (e) {
+    console.error("[admin] login error", e);
+    const msg = (e && (e.code || e.message)) ? String(e.code || e.message) : "No se pudo iniciar sesión.";
+    // Mensaje claro en UI (no dejar al usuario sin feedback)
+    $("loginStatus").textContent = msg.includes("auth/invalid-credential") || msg.includes("auth/wrong-password")
+      ? "Email o contraseña incorrectos."
+      : msg;
     $("loginBtn").textContent = "Ingresar";
   }
 };
