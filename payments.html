@@ -385,6 +385,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { addDoc, collection, doc, getDoc, getFirestore, serverTimestamp, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, APP_CONFIG, MEDIATOKEN } from "./firebase-config.js";
+import { canUsePayments } from "./plan-helpers.js";
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -607,11 +608,50 @@ function escHtml(value = "") {
   return div.innerHTML;
 }
 
+function renderPlanLocked(planName = "") {
+  const msg = `Hola! Quiero actualizar mi plan para habilitar links de pago. Mi tienda: *${tenantId || "-"}*`;
+  const wa = `https://wa.me/${APP_CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`;
+  document.body.innerHTML = `
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:22px">
+      <div style="max-width:480px;width:100%;background:#fff;border-radius:14px;box-shadow:0 2px 14px rgba(0,0,0,.08);padding:26px 22px;text-align:center">
+        <div style="font-size:2.4rem;margin-bottom:8px">🔒</div>
+        <h2 style="font-size:1.1rem;margin-bottom:8px">Función disponible en Pro y Premium</h2>
+        <p style="color:#666;font-size:.92rem;line-height:1.5;margin-bottom:16px">
+          Los links de pago no están incluidos en tu plan actual${planName ? ` (*${escHtml(planName)}*)` : ""}. Para usar esta herramienta, actualizá tu plan.
+        </p>
+        <a href="${wa}" style="display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px 16px;background:#00a650;color:#fff;border-radius:10px;text-decoration:none;font-weight:700">
+          Consultar actualización por WhatsApp
+        </a>
+      </div>
+    </div>
+  `;
+}
+
+async function checkPaymentsAccess() {
+  if (!tenantId) return { allowed: false, planName: "" };
+  try {
+    const planSnap = await getDoc(doc(db, `tenants/${tenantId}/settings/plan`));
+    const plan = planSnap.exists() ? planSnap.data() : null;
+    return { allowed: canUsePayments(plan), planName: plan?.planName || "" };
+  } catch {
+    return { allowed: false, planName: "" };
+  }
+}
+
 const shakeStyle = document.createElement("style");
 shakeStyle.textContent = "@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }";
 document.head.appendChild(shakeStyle);
 
-loadConfig();
+async function init() {
+  const access = await checkPaymentsAccess();
+  if (!access.allowed) {
+    renderPlanLocked(access.planName);
+    return;
+  }
+  loadConfig();
+}
+
+init();
 </script>
 </body>
 </html>
