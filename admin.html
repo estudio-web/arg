@@ -19,7 +19,7 @@
   --radius:8px;--radius-lg:14px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Nunito',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+ body{font-family:'Nunito',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 
 /* HEADER */
 .header{position:fixed;top:0;left:0;right:0;background:var(--yellow);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;z-index:100;box-shadow:0 2px 6px rgba(0,0,0,.15)}
@@ -87,14 +87,19 @@ body{font-family:'Nunito',Arial,sans-serif;background:var(--bg);color:var(--text
 
 /* PRODUCT LIST */
 .product-list{display:grid;gap:8px}
-.item{background:var(--white);border-radius:var(--radius-lg);padding:11px 12px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-sm);border:1.5px solid transparent;transition:border-color .15s,box-shadow .15s}
+ .item{background:var(--white);border-radius:var(--radius-lg);padding:11px 12px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-sm);border:1.5px solid transparent;transition:border-color .15s,box-shadow .15s;min-width:0;overflow:hidden}
 .item:hover{border-color:var(--blue);box-shadow:var(--shadow-md)}
 .item-thumb{width:60px;height:60px;border-radius:10px;object-fit:cover;background:var(--bg);flex-shrink:0}
 .item-info{flex:1;min-width:0}
-.item-title{font-weight:800;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:2px}
+ .item-title{font-weight:800;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:2px;max-width:100%}
 .item-price{font-size:.82rem;color:var(--sub);font-weight:600}
-.item-badges{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap}
-.item-badge{display:inline-block;font-size:.65rem;font-weight:800;padding:2px 7px;border-radius:999px}
+ .item-badges{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;min-width:0}
+ .item-badge{display:inline-block;font-size:.65rem;font-weight:800;padding:2px 7px;border-radius:999px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+ /* En pantallas muy chicas: mantenemos el layout estable y el titulo no empuja botones */
+ @media(max-width:420px){
+   .item-title{font-size:.88rem}
+ }
 .badge-active{background:#e6f9ef;color:var(--green)}
 .badge-inactive{background:#fef2f2;color:var(--red)}
 .badge-promo{background:#fff3e0;color:var(--orange)}
@@ -491,25 +496,14 @@ body{font-family:'Nunito',Arial,sans-serif;background:var(--bg);color:var(--text
         <select id="catSelect"><option value="">Sin categoría</option></select>
       </div>
       <div class="field"><label>Descripción</label><textarea id="descInput" placeholder="Describí el producto..."></textarea></div>
-      <div class="field"><label>URL de imagen</label><input id="imageUrlInput" placeholder="https://..." /></div>
+      <div class="field">
+        <label>Imágenes</label>
+        <div id="imagesPlanNote" style="font-size:.78rem;color:var(--sub);margin-bottom:8px"></div>
+        <div id="imagesManager"></div>
+        <button class="btn-sm btn-sm-blue" id="btnAddImage" type="button" style="margin-top:10px">+ Agregar imagen</button>
+</div>
     </div>
-    <div class="upload-section">
-      <span class="upload-label">O subí una imagen</span>
-      <div class="upload-row">
-        <div class="file-input-wrap">
-          <label class="file-input-label">
-            <svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>
-            <span id="fileName">Elegir archivo</span>
-          </label>
-          <input type="file" id="imageFile" accept="image/*" />
-        </div>
-        <button class="btn-upload" id="uploadBtn">
-          <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-          Subir
-        </button>
-      </div>
-      <div class="upload-status" id="uploadStatus"></div>
-    </div>
+    <div class="upload-section" id="uploadSectionLegacy" style="display:none"></div>
     <div class="fields" style="padding-bottom:4px">
       <div class="form-toggle-row">
         <div><div class="form-toggle-label">Activo / Visible</div><div class="form-toggle-sub">Mostrar en el catálogo público</div></div>
@@ -616,6 +610,7 @@ import {
   getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { firebaseConfig, MEDIATOKEN, APP_CONFIG, PLANS } from "./firebase-config.js";
+import { canUsePayments, getImageLimitByPlan, getProductImages } from "./plan-helpers.js";
 
 const app  = initializeApp(firebaseConfig);
 const db   = getFirestore(app);
@@ -634,6 +629,7 @@ let unsubCats    = null;
 let unsubOrders  = null;
 let manualPaymentItems = [];
 let manualPaymentOrderId = null;
+let productImagesDraft = [];
 
 const $ = id => document.getElementById(id);
 
@@ -656,6 +652,8 @@ function canAddProduct(plan, currentCount) {
   if (plan.isUnlimited) return true;
   return currentCount < (plan.productLimit || 3);
 }
+
+// Helpers compartidos importados desde plan-helpers.js
 
 function renderDashboard() {
   const currency = ($("cfgCurrency")?.value || APP_CONFIG.currencySymbol || "$").trim() || "$";
@@ -772,7 +770,7 @@ function initListeners() {
 
 async function initTrialPlan() {
   const now = new Date();
-  const exp = new Date(now.getTime() + 14 * 86400000);
+  const exp = new Date(now.getTime() + 3 * 86400000);
   planData = {
     planName: "trial",
     productLimit: PLANS.trial.productLimit,
@@ -781,7 +779,7 @@ async function initTrialPlan() {
     status: "active",
     startedAt: now.toISOString(),
     expiresAt: exp.toISOString(),
-    planDays: 14,
+    planDays: 3,
   };
   await setDoc(doc(db, `tenants/${tenantId}/settings/plan`), planData);
 }
@@ -793,6 +791,9 @@ function renderPlanBanner() {
   const plan = PLANS[planData.planName] || {};
   const banner  = $("planBanner");
   const btnRenew= $("btnRenewBanner");
+  const paymentsAllowed = canUsePayments(planData);
+
+$("btnPayments").style.display = paymentsAllowed ? "" : "none";
 
   $("planBadgeName").textContent = plan.name || planData.planName;
 
@@ -1304,6 +1305,11 @@ function updatePaymentsPreview() {
 }
 
 function openPaymentsModal() {
+  if (!canUsePayments(planData)) {
+    showToast("Los links de pago están disponibles solo en Pro y Premium.");
+    return;
+  }
+
   renderPaymentsProductSelect();
   renderPaymentsCart();
   $("paymentsModal").classList.add("open");
@@ -1328,7 +1334,7 @@ function addManualPaymentItem() {
       title: product.title || "Sin titulo",
       price: parsePaymentMoney(product.promoPrice || product.price || 0),
       qty: 1,
-      imageUrl: product.imageUrl || ""
+      imageUrl: (getProductImages(product)[0] || product.imageUrl || "")
     });
   }
   manualPaymentOrderId = null;
@@ -1445,12 +1451,12 @@ function openEditModal(p) {
   $("discountInput").value   = p.discount    || "";
   $("stockInput").value      = p.stock !== undefined ? p.stock : "";
   $("descInput").value       = p.description || "";
-  $("imageUrlInput").value   = p.imageUrl    || "";
+  productImagesDraft = getProductImages(p);
   $("toggleActive").checked  = p.active !== false;
   $("toggleFeatured").checked= !!p.featured;
   updateCatSelect();
   $("catSelect").value = p.categoryId || "";
-  if (p.imageUrl) setPreview(p.imageUrl);
+  renderImagesManager();
   $("modal").classList.add("open");
 }
 
@@ -1458,35 +1464,138 @@ function closeModal() { $("modal").classList.remove("open"); clearForm(); }
 
 function clearForm() {
   editId = null;
-  ["titleInput","priceInput","promoPriceInput","discountInput","stockInput","descInput","imageUrlInput"].forEach(id => $(id).value = "");
-  $("imageFile").value = ""; $("fileName").textContent = "Elegir archivo";
-  $("uploadStatus").textContent = ""; $("uploadStatus").className = "upload-status";
   $("toggleActive").checked = true; $("toggleFeatured").checked = false;
-  clearPreview();
+  ["titleInput","priceInput","promoPriceInput","discountInput","stockInput","descInput"].forEach(id => $(id).value = "");
+  productImagesDraft = [];
+  renderImagesManager();
 }
 
 function setPreview(url) { $("preview").src = url; $("preview").classList.add("visible"); $("imgPlaceholder").style.display = "none"; $("previewWrap").classList.add("has-img"); }
 function clearPreview()  { $("preview").src = ""; $("preview").classList.remove("visible"); $("imgPlaceholder").style.display = "flex"; $("previewWrap").classList.remove("has-img"); }
 
+function renderImagesManager() {
+  const limit = getImageLimitByPlan(planData);
+  const note = $("imagesPlanNote");
+  if (note) note.textContent = `Tu plan actual permite hasta ${limit} imágen${limit === 1 ? "" : "es"} por producto.`;
+
+  // Mantener compatibilidad y orden (max 5 en BD)
+  productImagesDraft = (Array.isArray(productImagesDraft) ? productImagesDraft : []).filter(Boolean).slice(0, 5);
+
+  // Preview principal
+  const main = productImagesDraft[0] || "";
+  main ? setPreview(main) : clearPreview();
+
+  const wrap = $("imagesManager");
+  if (!wrap) return;
+  wrap.innerHTML = "";
+
+  const canAddMore = productImagesDraft.length < Math.min(5, limit);
+  const addBtn = $("btnAddImage");
+  if (addBtn) {
+    addBtn.style.display = canAddMore ? "" : "none";
+    addBtn.disabled = !canAddMore;
+    addBtn.title = canAddMore ? "Agregar imagen" : "Actualizá tu plan para cargar más imágenes.";
+  }
+
+  // Mostrar hasta el límite del plan, pero sin borrar imágenes legacy: si ya existían más, se renderizan bloqueadas.
+  const visibleCount = Math.max(productImagesDraft.length, Math.min(limit, 5));
+  for (let i = 0; i < visibleCount; i++) {
+    const url = productImagesDraft[i] || "";
+    const locked = i >= limit;
+
+    const row = document.createElement("div");
+    row.style.display = "grid";
+    row.style.gridTemplateColumns = "56px 1fr";
+    row.style.gap = "10px";
+    row.style.alignItems = "start";
+    row.style.marginBottom = "10px";
+
+    row.innerHTML = `
+      <div style="width:56px;height:56px;border-radius:10px;overflow:hidden;background:var(--bg);border:1px solid var(--border)">
+        <img id="imgSlotPrev_${i}" src="${esc(url || placeholder("IMG"))}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.src='${placeholder("IMG")}'">
+      </div>
+      <div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input id="imgSlotUrl_${i}" ${locked ? "disabled" : ""} placeholder="${i === 0 ? "Imagen principal https://..." : `Imagen ${i + 1} https://...`}" value="${esc(url)}" style="flex:1;min-width:220px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.92rem;outline:none;background:${locked ? "#f3f4f6" : "#fafafa"}" />
+          <button type="button" class="btn-sm" id="imgSlotRemove_${i}" ${locked ? "disabled" : ""} style="background:#fef2f2;color:var(--red);border:1px solid #fecaca">${i === 0 ? "Quitar principal" : "Quitar"}</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:7px;flex-wrap:wrap">
+          <input id="imgSlotFile_${i}" type="file" ${locked ? "disabled" : ""} accept="image/*" style="flex:1;min-width:220px" />
+          <button type="button" class="btn-sm btn-sm-blue" id="imgSlotUpload_${i}" ${locked ? "disabled" : ""}>Subir a ImgBB</button>
+          <span id="imgSlotStatus_${i}" style="font-size:.78rem;color:${locked ? "#9ca3af" : "var(--sub)"}"></span>
+        </div>
+        ${locked ? `<div style="font-size:.78rem;color:#b45309;margin-top:6px">Actualizá tu plan para editar/cargar esta imagen.</div>` : ""}
+      </div>
+    `;
+
+    wrap.appendChild(row);
+
+    const urlEl = document.getElementById(`imgSlotUrl_${i}`);
+    if (urlEl && !locked) {
+      urlEl.addEventListener("input", () => {
+        const next = urlEl.value.trim();
+        productImagesDraft[i] = next;
+        const prev = document.getElementById(`imgSlotPrev_${i}`);
+        if (prev) prev.src = next || placeholder("IMG");
+        if (i === 0) (next ? setPreview(next) : clearPreview());
+      });
+    }
+
+    const rmBtn = document.getElementById(`imgSlotRemove_${i}`);
+    if (rmBtn && !locked) {
+      rmBtn.onclick = () => {
+        productImagesDraft.splice(i, 1);
+        renderImagesManager();
+      };
+    }
+
+    const upBtn = document.getElementById(`imgSlotUpload_${i}`);
+    if (upBtn && !locked) {
+      upBtn.onclick = async () => {
+        const file = document.getElementById(`imgSlotFile_${i}`)?.files?.[0];
+        const status = document.getElementById(`imgSlotStatus_${i}`);
+        if (!file) {
+          if (status) status.textContent = "Seleccioná una imagen.";
+          return;
+        }
+        upBtn.disabled = true;
+        if (status) status.textContent = "Subiendo...";
+        try {
+          const form = new FormData();
+          form.append("image", file);
+          const res = await fetch(`https://api.imgbb.com/1/upload?key=${MEDIATOKEN}`, { method: "POST", body: form });
+          const data = await res.json();
+          if (!data.success || !data.data?.url) throw new Error("upload_failed");
+          const next = data.data.url;
+          productImagesDraft[i] = next;
+          const slotUrl = document.getElementById(`imgSlotUrl_${i}`);
+          if (slotUrl) slotUrl.value = next;
+          const prev = document.getElementById(`imgSlotPrev_${i}`);
+          if (prev) prev.src = next;
+          if (i === 0) setPreview(next);
+          if (status) status.textContent = "✓ Imagen subida";
+        } catch {
+          if (status) status.textContent = "Error al subir.";
+        } finally {
+          upBtn.disabled = false;
+        }
+      };
+    }
+  }
+}
+
 $("addBtn").onclick = openAddModal;
 $("cancelBtn").onclick = $("cancelBtn2").onclick = closeModal;
 $("modal").addEventListener("click", e => { if (e.target === $("modal")) closeModal(); });
-$("imageUrlInput").addEventListener("input", () => { const u = $("imageUrlInput").value.trim(); u ? setPreview(u) : clearPreview(); });
-$("imageFile").addEventListener("change", () => { $("fileName").textContent = $("imageFile").files[0]?.name || "Elegir archivo"; });
 
-$("uploadBtn").onclick = async () => {
-  const file = $("imageFile").files[0];
-  if (!file) { $("uploadStatus").textContent = "Seleccioná una imagen."; $("uploadStatus").className = "upload-status err"; return; }
-  $("uploadBtn").disabled = true; $("uploadStatus").textContent = "Subiendo…";
-  try {
-    const form = new FormData(); form.append("image", file);
-    const res  = await fetch(`https://api.imgbb.com/1/upload?key=${MEDIATOKEN}`, { method: "POST", body: form });
-    const data = await res.json();
-    if (!data.success) throw new Error();
-    $("imageUrlInput").value = data.data.url; setPreview(data.data.url);
-    $("uploadStatus").textContent = "✓ Imagen subida"; $("uploadStatus").className = "upload-status ok";
-  } catch { $("uploadStatus").textContent = "Error al subir."; $("uploadStatus").className = "upload-status err"; }
-  finally { $("uploadBtn").disabled = false; }
+$("btnAddImage").onclick = () => {
+  const limit = getImageLimitByPlan(planData);
+  if (productImagesDraft.length >= Math.min(5, limit)) {
+    showToast(`Tu plan actual permite hasta ${limit} imagen${limit === 1 ? "" : "es"} por producto. Actualizá tu plan para cargar más imágenes.`);
+    return;
+  }
+  productImagesDraft.push("");
+  renderImagesManager();
 };
 
 $("saveBtn").onclick = async () => {
@@ -1499,6 +1608,9 @@ $("saveBtn").onclick = async () => {
     return;
   }
 
+  const images = (Array.isArray(productImagesDraft) ? productImagesDraft : []).filter(Boolean).slice(0, 5);
+  const primaryImage = images[0] || "";
+
   const data = {
     title:       $("titleInput").value.trim(),
     price:       $("priceInput").value.trim(),
@@ -1507,7 +1619,8 @@ $("saveBtn").onclick = async () => {
     stock:       $("stockInput").value !== "" ? Number($("stockInput").value) : null,
     categoryId:  $("catSelect").value || null,
     description: $("descInput").value.trim(),
-    imageUrl:    $("imageUrlInput").value.trim(),
+    imageUrl:    primaryImage,
+    images:      images,
     active:      $("toggleActive").checked,
     featured:    $("toggleFeatured").checked,
     updatedAt:   serverTimestamp()
