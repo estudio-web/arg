@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Revendedores - IN-STORE Premium</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --bg:#0b0b0b;
+      --surface:#111;
+      --card:#141414;
+      --border:#242424;
+      --text:#f5f5f5;
+      --muted:#b6b6b6;
+      --muted2:#8b8b8b;
+      --orange:#f97316;
+      --orange2:#ea580c;
+      --green:#25D366;
+      --green2:#1faa52;
+      --red:#e83030;
+      --white:#fff;
+      --shadow:0 14px 34px rgba(0,0,0,.46);
+      --r:14px;
+      --r2:18px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Nunito',Arial,sans-serif;background:linear-gradient(180deg,#0a0a0a 0%, #0f0f0f 55%, #0b0b0b 100%);color:var(--text);min-height:100vh}
+    a{color:inherit;text-decoration:none}
+    button,input,select,textarea{font-family:inherit}
+
+    .topbar{
+      position:sticky;top:0;z-index:50;
+      background:rgba(0,0,0,.78);
+      backdrop-filter:blur(10px);
+      border-bottom:1px solid rgba(255,255,255,.06);
+      padding:12px 14px;
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+    }
+    .brand{display:flex;align-items:center;gap:10px;min-width:0}
+    .brand-dot{width:9px;height:9px;border-radius:50%;background:var(--orange);box-shadow:0 0 0 6px rgba(249,115,22,.12)}
+    .brand h1{font-size:1rem;font-weight:900;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .brand small{display:block;font-size:.74rem;color:rgba(255,255,255,.58);font-weight:700;margin-top:1px}
+
+    .top-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+    .chip{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 12px;border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      font-size:.78rem;font-weight:800;color:rgba(255,255,255,.86);
+      max-width:52vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+    .btn{
+      border:none;border-radius:12px;
+      padding:10px 14px;
+      font-size:.85rem;font-weight:900;
+      cursor:pointer;
+      transition:transform .08s ease, background .15s ease, opacity .15s ease;
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      user-select:none;
+    }
+    .btn:active{transform:scale(.98)}
+    .btn-primary{background:var(--orange);color:#111}
+    .btn-primary:hover{background:var(--orange2)}
+    .btn-primary:disabled{background:rgba(249,115,22,.6);cursor:not-allowed;opacity:.7}
+    .btn-ghost{background:rgba(255,255,255,.06);color:var(--text);border:1px solid rgba(255,255,255,.12)}
+    .btn-ghost:hover{background:rgba(255,255,255,.10)}
+    .btn-wa{background:var(--green);color:#0b0b0b}
+    .btn-wa:hover{background:var(--green2)}
+    .btn-danger{background:rgba(232,48,48,.15);border:1px solid rgba(232,48,48,.35);color:#ffd0d0}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+
+    .wrap{max-width:1100px;margin:0 auto;padding:14px 12px 96px}
+    .hero{
+      margin-top:10px;
+      background:radial-gradient(1200px 380px at 10% 0%, rgba(249,115,22,.20) 0%, rgba(0,0,0,0) 62%),
+                 radial-gradient(900px 320px at 90% 10%, rgba(37,211,102,.16) 0%, rgba(0,0,0,0) 60%);
+      border:1px solid rgba(255,255,255,.07);
+      border-radius:var(--r2);
+      padding:16px 14px;
+      box-shadow:var(--shadow);
+    }
+    .hero-title{font-size:1.05rem;font-weight:900;letter-spacing:-.02em}
+    .hero-sub{margin-top:5px;color:rgba(255,255,255,.68);font-size:.86rem;line-height:1.45}
+
+    .grid5{display:grid;gap:10px;margin-top:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
+    @media(min-width:980px){.grid5{grid-template-columns:repeat(5,minmax(0,1fr))}}
+    .stat{
+      background:linear-gradient(180deg, rgba(255,255,255,.06) 0%, rgba(255,255,255,.03) 100%);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:var(--r);
+      padding:14px 14px;
+      box-shadow:0 8px 20px rgba(0,0,0,.34);
+      min-height:88px;
+    }
+    .stat .k{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.58);font-weight:900}
+    .stat .v{margin-top:7px;font-size:1.45rem;font-weight:900;line-height:1}
+    .stat .s{margin-top:6px;font-size:.78rem;color:rgba(255,255,255,.62);font-weight:800}
+
+    .tabs{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+    .tab{
+      padding:10px 12px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);
+      color:rgba(255,255,255,.82);
+      font-size:.82rem;font-weight:900;
+      cursor:pointer;
+      transition:background .15s ease, border-color .15s ease;
+    }
+    .tab.active{background:rgba(249,115,22,.18);border-color:rgba(249,115,22,.35);color:#fff}
+
+    .panel{margin-top:12px}
+    .card{
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.09);
+      border-radius:var(--r2);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card-h{padding:14px 14px 10px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .card-h h2{font-size:.92rem;font-weight:900}
+    .card-b{padding:14px}
+
+    .form-grid{display:grid;gap:10px}
+    @media(min-width:780px){.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .field label{display:block;font-size:.72rem;font-weight:900;color:rgba(255,255,255,.62);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+    .input,.select,.textarea{
+      width:100%;
+      padding:12px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.22);
+      color:var(--text);
+      outline:none;
+      font-size:.92rem;
+      font-weight:800;
+    }
+    .textarea{min-height:92px;resize:vertical}
+    .input:focus,.select:focus,.textarea:focus{border-color:rgba(249,115,22,.55);box-shadow:0 0 0 3px rgba(249,115,22,.12)}
+    .input:disabled,.select:disabled{opacity:.6;cursor:not-allowed}
+
+    .list{display:grid;gap:10px}
+    .item{
+      background:rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px;
+      padding:12px 12px;
+    }
+    .item-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+    .title{font-size:.95rem;font-weight:900}
+    .meta{margin-top:4px;color:rgba(255,255,255,.70);font-size:.82rem;font-weight:700;line-height:1.35}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .badge{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:6px 10px;border-radius:999px;
+      font-size:.72rem;font-weight:900;letter-spacing:.02em;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.06);
+      color:rgba(255,255,255,.86);
+      white-space:nowrap;
+    }
+    .badge.orange{border-color:rgba(249,115,22,.35);background:rgba(249,115,22,.14)}
+    .badge.green{border-color:rgba(37,211,102,.35);background:rgba(37,211,102,.14)}
+    .badge.gray{border-color:rgba(255,255,255,.10);background:rgba(255,255,255,.06)}
+
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .row .tight{flex:0 0 auto}
+
+    .mini{font-size:.78rem;color:rgba(255,255,255,.62);font-weight:800}
+    .hr{height:1px;background:rgba(255,255,255,.08);margin:12px 0}
+
+    .overlay{position:fixed;inset:0;z-index:999;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.78)}
+    .overlay.open{display:flex}
+    .modal{max-width:560px;width:100%;background:#0e0e0e;border:1px solid rgba(255,255,255,.12);border-radius:18px;box-shadow:0 18px 60px rgba(0,0,0,.55);overflow:hidden}
+    .modal-h{padding:14px 14px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .modal-h strong{font-size:.95rem}
+    .modal-b{padding:14px}
+    .modal-actions{display:flex;gap:10px;margin-top:12px}
+    .modal-actions .btn{flex:1}
+
+    .blocked{
+      min-height:calc(100vh - 56px);
+      display:flex;align-items:center;justify-content:center;
+      padding:22px;
+    }
+    .blocked-box{
+      max-width:520px;width:100%;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      padding:22px 18px;
+      text-align:center;
+    }
+    .blocked-icon{font-size:3rem;margin-bottom:10px}
+    .blocked-box h2{font-size:1.08rem;font-weight:900;margin-bottom:10px}
+    .blocked-box p{color:rgba(255,255,255,.68);font-size:.92rem;line-height:1.6;margin-bottom:14px}
+
+    .hidden{display:none!important}
+    .spinner{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,.3);border-top:2px solid #fff;border-radius:50%;animation:spin .6s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .toast{
+      position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+      background:rgba(0,0,0,.9);border:1px solid rgba(255,255,255,.15);
+      border-radius:14px;padding:12px 16px;font-size:.88rem;font-weight:700;
+      z-index:1000;max-width:90vw;word-wrap:break-word;backdrop-filter:blur(10px);
+      animation:slideUp .3s ease;
+    }
+    @keyframes slideUp{from{opacity:0;transform:translate(-50%,20px)}to{opacity:1;transform:translate(-50%,0)}}
+
+    .loading-screen{
+      position:fixed;inset:0;z-index:999;
+      background:linear-gradient(180deg,#0a0a0a 0%, #0f0f0f 55%, #0b0b0b 100%);
+      display:flex;align-items:center;justify-content:center;
+      flex-direction:column;gap:12px;
+    }
+    .loading-screen.hidden{display:none}
+  </style>
+</head>
+<body>
+  <div class="loading-screen" id="loadingScreen">
+    <div class="spinner"></div>
+    <div style="font-size:.88rem;color:rgba(255,255,255,.68)">Cargando...</div>
+  </div>
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <div>
+        <h1 id="heroTitle">Revendedores</h1>
+        <small id="userChip">—</small>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="btn btn-primary" id="btnNewReseller">Nuevo</button>
+      <button class="btn btn-ghost" onclick="auth.signOut()">Salir</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="hero">
+      <div class="hero-title">👥 Revendedores Premium</div>
+      <div class="hero-sub">Gestiona tu red de revendedores, asigna comisiones y monitorea venta indirecta.</div>
+    </div>
+
+    <div class="grid5" id="stats">
+      <div class="stat">
+        <div class="k">Total</div>
+        <div class="v" id="statTotal">0</div>
+        <div class="s">revendedores</div>
+      </div>
+      <div class="stat">
+        <div class="k">Activos</div>
+        <div class="v" id="statActive">0</div>
+        <div class="s">vendiendo</div>
+      </div>
+      <div class="stat">
+        <div class="k">Comisión</div>
+        <div class="v" id="statCommission">$0</div>
+        <div class="s">esta semana</div>
+      </div>
+      <div class="stat">
+        <div class="k">Pagadas</div>
+        <div class="v" id="statPaid">$0</div>
+        <div class="s">comisiones</div>
+      </div>
+      <div class="stat">
+        <div class="k">Plan</div>
+        <div class="v" id="statPlan">—</div>
+        <div class="s" id="statPlanExpiry">—</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" id="tabResellers">Revendedores</button>
+      <button class="tab" id="tabOrders">Comisiones x Orden</button>
+    </div>
+
+    <div class="panel" id="resellerPanel">
+      <div class="card">
+        <div class="card-h">
+          <h2>Listado</h2>
+          <span class="mini" id="resellerCount">0 revendedores</span>
+        </div>
+        <div class="card-b">
+          <div class="list" id="resellerList"></div>
+          <div id="resellerEmpty" style="padding:20px;text-align:center;color:rgba(255,255,255,.58)">
+            Sin revendedores aún
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel hidden" id="ordersPanel" style="display:none">
+      <div class="card">
+        <div class="card-h">
+          <h2>Comisiones por orden</h2>
+        </div>
+        <div class="card-b">
+          <div style="display:grid;gap:10px;margin-bottom:12px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+            <div class="field">
+              <label>Revendedor</label>
+              <select class="select" id="orderResellerFilter">
+                <option value="">Todos</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Estado</label>
+              <select class="select" id="orderCommissionFilter">
+                <option value="">Todas</option>
+                <option value="pending">Pendientes</option>
+                <option value="paid">Pagadas</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Desde</label>
+              <input type="date" class="input" id="dateFrom">
+            </div>
+            <div class="field">
+              <label>Hasta</label>
+              <input type="date" class="input" id="dateTo">
+            </div>
+          </div>
+          <div class="field">
+            <input type="text" class="input" id="orderSearch" placeholder="Buscar cliente...">
+          </div>
+          <div style="overflow-x:auto;margin-top:12px">
+            <table style="width:100%;border-collapse:collapse;font-size:.82rem">
+              <thead style="border-bottom:1px solid rgba(255,255,255,.12)">
+                <tr style="color:rgba(255,255,255,.62);font-weight:900">
+                  <th style="text-align:left;padding:8px">Fecha</th>
+                  <th style="text-align:left;padding:8px">Cliente</th>
+                  <th style="text-align:left;padding:8px">Total</th>
+                  <th style="text-align:left;padding:8px">Revendedor</th>
+                  <th style="text-align:left;padding:8px">Comisión</th>
+                  <th style="text-align:left;padding:8px">Estado</th>
+                  <th style="text-align:left;padding:8px"></th>
+                </tr>
+              </thead>
+              <tbody id="ordersTbody"></tbody>
+            </table>
+            <div id="ordersEmpty" style="padding:20px;text-align:center;color:rgba(255,255,255,.58)">
+              Sin órdenes con comisiones
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="resellerOverlay">
+    <div class="modal">
+      <div class="modal-h">
+        <strong id="resellerModalTitle">Crear revendedor</strong>
+        <button class="btn btn-ghost" id="btnCloseReseller" style="padding:6px 8px;border-radius:8px">✕</button>
+      </div>
+      <div class="modal-b">
+        <div class="form-grid">
+          <div class="field">
+            <label>Nombre</label>
+            <input type="text" class="input" id="rName" placeholder="Ej: Juan García">
+          </div>
+          <div class="field">
+            <label>WhatsApp</label>
+            <input type="tel" class="input" id="rPhone" placeholder="54 9 11 2345 6789">
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input type="email" class="input" id="rEmail" placeholder="ejemplo@gmail.com">
+          </div>
+          <div class="field">
+            <label>Estado</label>
+            <select class="select" id="rStatus">
+              <option value="active">Activo</option>
+              <option value="inactive">Inactivo</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Tipo de comisión</label>
+            <select class="select" id="rCommissionType">
+              <option value="percent">Porcentaje (%)</option>
+              <option value="fixed">Monto fijo ($)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Valor de comisión</label>
+            <input type="number" class="input" id="rCommissionValue" placeholder="15" step="0.01" min="0">
+          </div>
+        </div>
+        <div class="field" style="grid-column:1/-1">
+          <label>Notas</label>
+          <textarea class="textarea" id="rNotes" placeholder="Información adicional..."></textarea>
+        </div>
+        <div class="mini" id="resellerModalHint" style="margin-top:8px">Se genera un link para vender</div>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" id="btnCancelReseller">Cancelar</button>
+          <button class="btn btn-primary" id="btnSaveReseller">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+    import { getFirestore, collection, query, orderBy, onSnapshot, doc, setDoc, updateDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyBk5OE8h0WCYxh1Hod76xehCggRAWdkNxw",
+      authDomain: "tiendas-944b7.firebaseapp.com",
+      projectId: "tiendas-944b7",
+      storageBucket: "tiendas-944b7.firebasestorage.app",
+      messagingSenderId: "394107779191",
+      appId: "1:394107779191:web:270163195b3e7d8f26ae72"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    window.auth = auth; // Exponemos auth al global scope para que el logout funcione
+
+    // ========== DOM HELPERS ==========
+    const $ = id => document.getElementById(id);
+    const esc = s => (s || "").toString().replaceAll(/[<>\"'&]/g, c => ({ "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;", "&": "&amp;" })[c]);
+
+    // ========== STATE ==========
+    let tenantId = null;
+    let planData = null;
+    let resellers = [];
+    let orders = [];
+    let editingResellerId = null;
+    let unsubResellers = null;
+    let unsubOrders = null;
+
+    // ========== FIREBASE HELPERS ==========
+    async function resolveTenantId(user) {
+      try {
+        const userDoc = await getDoc(doc(db, `users/${user.uid}`));
+        if (userDoc.exists()) {
+          const tid = userDoc.data().tenantId;
+          if (tid) return tid;
+        }
+      } catch (e) {
+        console.error("[resolveTenantId]", e);
+      }
+      return null;
+    }
+
+    async function loadPlan() {
+      try {
+        const planDoc = await getDoc(doc(db, `tenants/${tenantId}/settings/plan`));
+        planData = planDoc.exists() ? planDoc.data() : null;
+      } catch (e) {
+        console.error("[loadPlan]", e);
+        planData = null;
+      }
+    }
+
+    // ========== UI HELPERS ==========
+    function showLoading() {
+      $("loadingScreen").classList.remove("hidden");
+    }
+    function hideLoading() {
+      $("loadingScreen").classList.add("hidden");
+    }
+    function showApp() {
+      hideLoading();
+    }
+    function showBlocked() {
+      hideLoading();
+      document.body.innerHTML = `
+        <div class="blocked">
+          <div class="blocked-box">
+            <div class="blocked-icon">🔒</div>
+            <h2>Plan requerido</h2>
+            <p>Revendedores está disponible solo en plan <strong>Premium</strong>.</p>
+            <a href="admin.html" style="display:inline-flex;gap:8px;padding:10px 16px;background:var(--orange);color:#000;border-radius:12px;font-weight:900;margin-top:12px">← Volver</a>
+          </div>
+        </div>
+      `;
+    }
+
+    function toast(msg) {
+      const el = document.createElement("div");
+      el.className = "toast";
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    }
+
+    function money(n) {
+      return "$" + (n || 0).toLocaleString("es-AR");
+    }
+
+    function formatDate(ts) {
+      if (!ts) return "—";
+      const d = new Date(ts.seconds * 1000);
+      return d.toLocaleDateString("es-AR");
+    }
+
+    function isPremiumPlan(plan) {
+      if (!plan) return false;
+      const name = (plan.planName || "").toLowerCase().trim();
+      return name === "premium" || name === "enterprise";
+    }
+
+    // ========== TABS ==========
+    function setActiveTab(tabName) {
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      if (tabName === "resellers") {
+        $("tabResellers").classList.add("active");
+        $("resellerPanel").style.display = "";
+        $("ordersPanel").style.display = "none";
+      } else {
+        $("tabOrders").classList.add("active");
+        $("resellerPanel").style.display = "none";
+        $("ordersPanel").style.display = "";
+      }
+    }
+    $("tabResellers").onclick = () => setActiveTab("resellers");
+    $("tabOrders").onclick = () => setActiveTab("orders");
+
+    // ========== STATS ==========
+    function renderStats() {
+      const total = resellers.length;
+      const active = resellers.filter(r => r.status === "active").length;
+
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const week = orders
+        .filter(o => o.resellerId && new Date(o.createdAt?.seconds * 1000 || 0) > sevenDaysAgo)
+        .reduce((s, o) => s + (Number(o.commissionAmount) || 0), 0);
+
+      const paid = orders
+        .filter(o => o.resellerId && o.commissionStatus === "paid")
+        .reduce((s, o) => s + (Number(o.commissionAmount) || 0), 0);
+
+      $("statTotal").textContent = total;
+      $("statActive").textContent = active;
+      $("statCommission").textContent = money(week);
+      $("statPaid").textContent = money(paid);
+      $("statPlan").textContent = planData?.planName || "—";
+      const days = planData?.daysRemaining || 0;
+      $("statPlanExpiry").textContent = days > 0 ? `${days} días` : "—";
+    }
+
+    // ========== RESELLERS ==========
+    function getResellerLink(resellerId) {
+      return `${window.location.origin}/arg/index.html?t=${tenantId}&r=${resellerId}`;
+    }
+
+    function renderResellers() {
+      const list = $("resellerList");
+      list.innerHTML = "";
+
+      const active = resellers.filter(r => r.status === "active");
+      $("resellerCount").textContent = `${resellers.length} revendedor${resellers.length !== 1 ? "es" : ""}`;
+      $("resellerEmpty").style.display = resellers.length ? "none" : "";
+
+      resellers.forEach(r => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <div class="item-top">
+            <div style="flex:1">
+              <div class="title">${esc(r.name)}</div>
+              <div class="meta">
+                📞 <a href="https://wa.me/${r.phone}" target="_blank">${esc(r.phone)}</a> • ${esc(r.email || "—")}
+              </div>
+              <div class="meta" style="margin-top:6px">
+                Comisión: <strong>${r.commissionType === "percent" ? r.commissionValue + "%" : money(r.commissionValue)}</strong>
+              </div>
+            </div>
+            <div>
+              <span class="badge ${r.status === "active" ? "green" : "gray"}">${r.status === "active" ? "✓ Activo" : "○ Inactivo"}</span>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-ghost" data-edit-id="${esc(r.id)}" style="font-size:.78rem;padding:6px 10px">Editar</button>
+            <button class="btn btn-ghost" data-copy-link="${esc(r.id)}" style="font-size:.78rem;padding:6px 10px">📋 Link</button>
+          </div>
+        `;
+
+        const editBtn = div.querySelector("[data-edit-id]");
+        const linkBtn = div.querySelector("[data-copy-link]");
+
+        editBtn.onclick = () => openResellerModal(r);
+        linkBtn.onclick = () => {
+          const link = getResellerLink(r.id);
+          navigator.clipboard.writeText(link).then(() => {
+            toast(`Link copiado: ${link}`);
+          });
+        };
+
+        list.appendChild(div);
+      });
+    }
+
+    // ========== ORDERS / COMMISSIONS ==========
+    function fillResellerFilter() {
+      const sel = $("orderResellerFilter");
+      const current = sel.value;
+      sel.innerHTML = '<option value="">Todos</option>';
+      resellers.forEach(r => {
+        const opt = document.createElement("option");
+        opt.value = r.id;
+        opt.textContent = r.name;
+        sel.appendChild(opt);
+      });
+      sel.value = current;
+    }
+
+    function orderMatchesFilters() {
+      return o => {
+        const rId = $("orderResellerFilter").value;
+        const cSt = $("orderCommissionFilter").value;
+        const from = new Date($("dateFrom").value || "1970-01-01");
+        const to = new Date($("dateTo").value || "2099-01-01");
+        to.setHours(23, 59, 59);
+
+        const oDate = new Date((o.createdAt?.seconds || 0) * 1000);
+
+        if (rId && o.resellerId !== rId) return false;
+        if (cSt && (o.commissionStatus || "pending") !== cSt) return false;
+        if (oDate < from || oDate > to) return false;
+
+        const search = ($("orderSearch").value || "").toLowerCase();
+        if (search) {
+          const customerName = (o.name || o.cliente || "").toLowerCase();
+          if (!customerName.includes(search)) return false;
+        }
+
+        return true;
+      };
+    }
+
+    function getOrderCustomerName(order) {
+      return (order.name || order.cliente || "").toString().trim() || "Cliente";
+    }
+
+    async function markCommissionPaid(orderId) {
+      try {
+        await updateDoc(doc(db, `tenants/${tenantId}/orders/${orderId}`), {
+          commissionStatus: "paid",
+          commissionPaidAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+        toast("✓ Comisión marcada como pagada");
+      } catch (e) {
+        console.error("[markCommissionPaid]", e);
+        toast("❌ No se pudo marcar como pagada");
+      }
+    }
+
+    function renderOrders() {
+      const tbody = $("ordersTbody");
+      tbody.innerHTML = "";
+
+      const sales = orders
+        .filter(o => !!o.resellerId)
+        .filter(orderMatchesFilters())
+        .slice()
+        .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+      $("ordersEmpty").style.display = sales.length ? "none" : "";
+
+      sales.forEach(o => {
+        const tr = document.createElement("tr");
+        const comm = Number(o.commissionAmount || 0);
+        const status = (o.commissionStatus || "pending");
+        const resellerLabel = o.resellerName || o.resellerId || "-";
+        tr.innerHTML = `
+          <td style="padding:8px">${esc(formatDate(o.createdAt))}</td>
+          <td style="padding:8px">${esc(getOrderCustomerName(o))}</td>
+          <td style="padding:8px"><strong>${esc(money(o.total || 0))}</strong></td>
+          <td style="padding:8px">${esc(resellerLabel)}</td>
+          <td style="padding:8px">${esc(money(comm))}</td>
+          <td style="padding:8px"><span class="badge ${status === "paid" ? "green" : "orange"}">${esc(status === "paid" ? "Pagada" : "Pendiente")}</span></td>
+          <td style="padding:8px;text-align:right">
+            ${status !== "paid" ? `<button class="btn btn-primary" data-pay="${esc(o.id)}" style="padding:6px 10px;border-radius:10px;font-size:.75rem">Marcar</button>` : ""}
+          </td>
+        `;
+        const btn = tr.querySelector("[data-pay]");
+        if (btn) btn.onclick = () => markCommissionPaid(btn.dataset.pay);
+        tbody.appendChild(tr);
+      });
+    }
+
+    $("orderResellerFilter").addEventListener("change", renderOrders);
+    $("orderCommissionFilter").addEventListener("change", renderOrders);
+    $("dateFrom").addEventListener("change", renderOrders);
+    $("dateTo").addEventListener("change", renderOrders);
+    $("orderSearch").addEventListener("input", renderOrders);
+
+    // ========== RESELLER MODAL ==========
+    function closeResellerModal() {
+      $("resellerOverlay").classList.remove("open");
+      editingResellerId = null;
+    }
+    $("btnCloseReseller").onclick = closeResellerModal;
+    $("btnCancelReseller").onclick = closeResellerModal;
+    $("resellerOverlay").addEventListener("click", e => {
+      if (e.target === $("resellerOverlay")) closeResellerModal();
+    });
+
+    function openResellerModal(reseller = null) {
+      // Validar que sea premium ANTES de abrir
+      if (!isPremiumPlan(planData)) {
+        toast("❌ Revendedores solo disponible en plan Premium");
+        return;
+      }
+
+      editingResellerId = reseller ? reseller.id : null;
+      $("resellerModalTitle").textContent = reseller ? "Editar revendedor" : "Crear revendedor";
+      $("rName").value = reseller?.name || "";
+      $("rPhone").value = reseller?.phone || "";
+      $("rEmail").value = reseller?.email || "";
+      $("rStatus").value = reseller?.status || "active";
+      $("rCommissionType").value = reseller?.commissionType || "percent";
+      $("rCommissionValue").value = (reseller?.commissionValue ?? "") === "" ? "" : String(reseller?.commissionValue ?? "");
+      $("rNotes").value = reseller?.notes || "";
+
+      const hint = reseller
+        ? `Link: ${getResellerLink(reseller.id)}`
+        : "Se genera un link único para que el revendedor venda";
+      $("resellerModalHint").textContent = hint;
+      $("resellerOverlay").classList.add("open");
+    }
+    $("btnNewReseller").onclick = () => openResellerModal(null);
+
+    async function saveReseller() {
+      const name = $("rName").value.trim();
+      const phone = ($("rPhone").value || "").replace(/\D/g, "");
+      const email = $("rEmail").value.trim();
+      const status = $("rStatus").value;
+      const commissionType = $("rCommissionType").value;
+      const commissionValue = Number($("rCommissionValue").value || 0);
+      const notes = $("rNotes").value.trim();
+
+      // Validaciones
+      if (!name) {
+        toast("❌ Completá el nombre");
+        return;
+      }
+      if (!phone || phone.length < 10) {
+        toast("❌ WhatsApp inválido");
+        return;
+      }
+      if (!["percent", "fixed"].includes(commissionType)) {
+        toast("❌ Tipo de comisión inválido");
+        return;
+      }
+      if (!Number.isFinite(commissionValue) || commissionValue < 0 || commissionValue > 100) {
+        toast("❌ Valor de comisión debe estar entre 0 y 100");
+        return;
+      }
+
+      const btn = $("btnSaveReseller");
+      btn.disabled = true;
+      const originalText = btn.textContent;
+      btn.innerHTML = '<span class="spinner"></span> Guardando...';
+
+      try {
+        const now = serverTimestamp();
+
+        if (editingResellerId) {
+          // ACTUALIZAR
+          await updateDoc(doc(db, `tenants/${tenantId}/resellers/${editingResellerId}`), {
+            name, phone, email, status, commissionType, commissionValue, notes,
+            updatedAt: now
+          });
+          toast("✓ Revendedor actualizado");
+        } else {
+          // CREAR
+          if (resellers.length >= 5) {
+            toast("❌ Límite alcanzado (máximo 5 revendedores)");
+            return;
+          }
+
+          // Generar ID único
+          const id = crypto?.randomUUID ? crypto.randomUUID() : `reseller_${Date.now()}`;
+
+          await setDoc(doc(db, `tenants/${tenantId}/resellers/${id}`), {
+            name, phone, email,
+            status,
+            commissionType, commissionValue,
+            notes,
+            createdAt: now,
+            updatedAt: now
+          });
+          toast("✓ Revendedor creado");
+        }
+
+        // Cerrar modal después de éxito
+        setTimeout(() => {
+          closeResellerModal();
+        }, 500);
+      } catch (e) {
+        console.error("[saveReseller]", e.code, e.message);
+
+        // Mostrar error específico según código Firestore
+        if (e.code === "permission-denied") {
+          toast("❌ Sin permisos. Verifica que tu plan sea Premium y tengas permisos de admin.");
+        } else if (e.code === "unavailable") {
+          toast("❌ Firebase no disponible. Intenta más tarde.");
+        } else if (e.code === "unauthenticated") {
+          toast("❌ Sesión expirada. Por favor, inicia sesión nuevamente.");
+        } else {
+          toast(`❌ Error: ${e.message || "No se pudo guardar"}`);
+        }
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+    $("btnSaveReseller").onclick = saveReseller;
+
+    // ========== FIRESTORE STREAMS ==========
+    function stopStreams() {
+      if (unsubResellers) unsubResellers();
+      if (unsubOrders) unsubOrders();
+    }
+
+    function startStreams() {
+      stopStreams();
+
+      // Revendedores
+      const resQ = query(
+        collection(db, `tenants/${tenantId}/resellers`),
+        orderBy("createdAt", "desc")
+      );
+      unsubResellers = onSnapshot(resQ,
+        snap => {
+          resellers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          fillResellerFilter();
+          renderStats();
+          renderResellers();
+          renderOrders();
+        },
+        err => {
+          console.error("[resellers snapshot]", err);
+          if (err.code === "permission-denied") {
+            toast("❌ Sin permisos para ver revendedores (solo admin Premium)");
+          } else {
+            toast(`❌ Error cargando revendedores: ${err.message}`);
+          }
+        }
+      );
+
+      // Órdenes
+      const ordQ = query(
+        collection(db, `tenants/${tenantId}/orders`),
+        orderBy("createdAt", "desc")
+      );
+      unsubOrders = onSnapshot(ordQ,
+        snap => {
+          orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          renderStats();
+          renderResellers();
+          renderOrders();
+        },
+        err => {
+          console.error("[orders snapshot]", err);
+          if (err.code === "permission-denied") {
+            toast("❌ Sin permisos para ver órdenes (solo admin)");
+          } else {
+            toast(`❌ Error cargando órdenes: ${err.message}`);
+          }
+        }
+      );
+    }
+
+    // ========== AUTH & INIT ==========
+    showLoading();
+
+    onAuthStateChanged(auth, async user => {
+      stopStreams();
+
+      if (!user) {
+        window.location.href = "admin.html";
+        return;
+      }
+
+      $("userChip").textContent = user.email || user.uid.slice(0, 6);
+
+      // Resolver tenant ID
+      tenantId = await resolveTenantId(user);
+      if (!tenantId) {
+        showBlocked();
+        return;
+      }
+
+      // Cargar plan
+      await loadPlan();
+
+      // Debug en consola
+      console.log("[resellers.html] user.uid:", user.uid);
+      console.log("[resellers.html] tenantId:", tenantId);
+      console.log("[resellers.html] planData:", planData);
+
+      // Validar que sea premium
+      if (!isPremiumPlan(planData)) {
+        showBlocked();
+        return;
+      }
+
+      // Mostrar app
+      $("heroTitle").textContent = `Revendedores • ${tenantId}`;
+      showApp();
+      setActiveTab("resellers");
+      startStreams();
+    });
+  </script>
+</body>
+</html>
