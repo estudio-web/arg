@@ -19,9 +19,9 @@ export const APP_CONFIG = {
 
 // Planes disponibles del SaaS
 export const PLANS = {
-  trial:   { name: "Trial",   days: 14,  productLimit: 3,    isUnlimited: false, price: 0     },
-  basic:   { name: "Básico",  days: 30,  productLimit: 60,   isUnlimited: false, price: 37999  },
-  pro:     { name: "Pro",     days: 30,  productLimit: 150,  isUnlimited: false, price: 59999  },
-  premium: { name: "Premium", days: 30,  productLimit: null, isUnlimited: true,  price: 119999 },
+  trial:   { name: "Trial",   days: 3,  productLimit: 3,    isUnlimited: false, price: 0     },
+  basic:   { name: "Básico",  days: 30,  productLimit: 40,   isUnlimited: false, price: 28000  },
+  pro:     { name: "Pro",     days: 30,  productLimit: 150,  isUnlimited: false, price: 48000  },
+  premium: { name: "Premium", days: 30,  productLimit: null, isUnlimited: true,  price: 96000 },
 };
 
