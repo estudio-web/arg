@@ -25,24 +25,67 @@
 /* HEADER */
   .header{position:fixed;top:0;left:0;right:0;background:var(--yellow);min-height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;z-index:100;box-shadow:0 2px 6px rgba(0,0,0,.15)}
   .header-brand{font-size:1.05rem;font-weight:900;display:flex;align-items:center;gap:6px}
-  .header-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;min-width:0}
+  .header-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;min-width:0;position:relative}
   .btn-icon{display:flex;align-items:center;gap:5px;border:none;border-radius:var(--radius);padding:7px 11px;font-family:inherit;font-size:.8rem;font-weight:800;cursor:pointer;transition:background .15s}
 .btn-logout{background:rgba(0,0,0,.1);color:var(--text)}
 .btn-logout:hover{background:rgba(0,0,0,.18)}
-.btn-share{background:#25d366;color:#fff}
-.btn-share:hover{background:#1faa52}
-.btn-orders{background:var(--blue);color:#fff;position:relative}
-.btn-orders:hover{background:var(--blue-dk)}
+  .btn-share{background:#25d366;color:#fff}
+  .btn-share:hover{background:#1faa52}
+  .btn-orders{background:var(--blue);color:#fff;position:relative}
+  .btn-orders:hover{background:var(--blue-dk)}
   .btn-payments{background:var(--orange);color:#fff}
   .btn-payments:hover{background:#ea580c}
   .btn-resellers{background:#111;color:var(--yellow)}
   .btn-resellers:hover{background:#000}
+  .btn-tools{background:rgba(0,0,0,.1);color:var(--text);position:relative}
+  .btn-tools:hover{background:rgba(0,0,0,.18)}
+  .tools-badge{background:var(--red);color:#fff;font-size:.6rem;font-weight:900;min-width:16px;height:16px;border-radius:999px;display:none;align-items:center;justify-content:center;padding:0 3px;position:absolute;top:-4px;right:-4px}
+
+  /* Contenedor de herramientas: en desktop se ve inline; en mobile se despliega tipo menu */
+  .tools-menu{display:flex;gap:6px;align-items:center}
+
   .btn-icon svg{width:15px;height:15px;fill:currentColor;flex-shrink:0}
   .orders-badge{background:var(--red);color:#fff;font-size:.6rem;font-weight:900;min-width:16px;height:16px;border-radius:999px;display:flex;align-items:center;justify-content:center;padding:0 3px;position:absolute;top:-4px;right:-4px}
   @media(max-width:500px){.btn-icon span{display:none}}
   @media(max-width:420px){
     .header{padding:0 10px}
     .btn-icon{padding:7px 9px;min-width:38px;justify-content:center}
+  }
+
+  /* Mobile menu */
+  @media(max-width:640px){
+    #btnTools{display:flex}
+    .tools-menu{
+      display:none;
+      position:absolute;
+      right:0;
+      top:54px;
+      background:#fff;
+      border:1px solid rgba(0,0,0,.10);
+      border-radius:16px;
+      box-shadow:0 10px 30px rgba(0,0,0,.18);
+      padding:10px;
+      z-index:120;
+      flex-direction:column;
+      align-items:stretch;
+      min-width:220px;
+      max-width:85vw;
+    }
+    .header-actions.menu-open .tools-menu{display:flex}
+    .tools-menu .btn-icon{
+      width:100%;
+      justify-content:flex-start;
+      padding:10px 12px;
+      border-radius:14px;
+    }
+    /* En el menu si mostramos texto aunque en header se oculte */
+    .tools-menu .btn-icon span{display:inline}
+    .tools-menu .orders-badge{position:static;margin-left:auto}
+  }
+
+  /* Desktop/tablet: ocultamos boton Tools (se ven acciones directo) */
+  @media(min-width:641px){
+    #btnTools{display:none}
   }
 
 /* PLAN BANNER */
@@ -311,6 +354,20 @@
 .confirm-cancel{flex:1;padding:11px;background:var(--bg);border:none;border-radius:var(--radius);font-family:inherit;font-weight:700;cursor:pointer}
 .confirm-ok{flex:1;padding:11px;background:var(--red);color:#fff;border:none;border-radius:var(--radius);font-family:inherit;font-weight:800;cursor:pointer}
 
+/* UPGRADE (locked features) */
+.upgrade-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:320;padding:20px}
+.upgrade-overlay.open{display:flex}
+.upgrade-box{background:var(--white);border-radius:18px;padding:22px 18px 18px;width:100%;max-width:360px;text-align:center;box-shadow:var(--shadow-md)}
+.upgrade-icon{font-size:2.4rem;margin-bottom:8px}
+.upgrade-box h3{font-size:1rem;font-weight:900;margin-bottom:6px}
+.upgrade-box p{font-size:.86rem;color:var(--sub);line-height:1.5;margin-bottom:14px}
+.upgrade-actions{display:flex;flex-direction:column;gap:8px}
+.btn-upgrade-wa{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px 14px;background:var(--green);color:#fff;border:none;border-radius:var(--radius);font-family:inherit;font-size:.9rem;font-weight:900;cursor:pointer;text-decoration:none}
+.btn-upgrade-close{width:100%;padding:11px;background:var(--bg);border:none;border-radius:var(--radius);font-family:inherit;font-weight:800;cursor:pointer}
+
+.btn-icon.locked{opacity:.55;filter:saturate(.7)}
+.btn-icon.locked::after{content:"";display:inline-block;width:14px;height:14px;margin-left:6px;background:currentColor;mask:url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"><path d=\"M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm6-7h-1V7a5 5 0 0 0-10 0v3H6c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-8c0-1.1-.9-2-2-2zM9 10V7a3 3 0 0 1 6 0v3H9z\"/></svg>') center/contain no-repeat; -webkit-mask:url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"><path d=\"M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm6-7h-1V7a5 5 0 0 0-10 0v3H6c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-8c0-1.1-.9-2-2-2zM9 10V7a3 3 0 0 1 6 0v3H9z\"/></svg>') center/contain no-repeat;}
+
 /* SKELETON */
 .skeleton-item{background:var(--white);border-radius:var(--radius-lg);padding:12px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-sm)}
 .sk{background:linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;border-radius:6px}
@@ -361,28 +418,35 @@
 <div id="adminApp" style="display:none">
   <header class="header">
     <div class="header-brand"><span>🛍️</span> <span id="brandName">Admin</span></div>
-    <div class="header-actions">
-      <button class="btn-icon btn-orders" id="btnOrders">
-        <svg viewBox="0 0 24 24"><path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg>
-        <span>Pedidos</span>
-        <span class="orders-badge" id="ordersBadge" style="display:none">0</span>
+    <div class="header-actions" id="headerActions">
+      <button class="btn-icon btn-tools" id="btnTools" title="Herramientas">
+        <svg viewBox="0 0 24 24"><path d="M22.7 19.3l-6.1-6.1a6.5 6.5 0 0 1-8.6-8.6l3.3 3.3 2.1-2.1L10.1 2.5A6.5 6.5 0 0 1 18 10.4l6.2 6.2-1.5 2.7zM7 20a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>
+        <span>Tools</span>
+        <span class="tools-badge" id="toolsBadge">!</span>
       </button>
-      <button class="btn-icon btn-orders" id="btnInternal">
-        <svg viewBox="0 0 24 24"><path d="M5 9.2h2.8V19H5V9.2zm5.6-4.2h2.8V19h-2.8V5zm5.6 7h2.8v7h-2.8v-7z"/></svg>
-        <span>Interno</span>
-      </button>
-      <button class="btn-icon btn-payments" id="btnPayments">
-        <svg viewBox="0 0 24 24"><path d="M21 7H3V5h18v2zm0 3H3v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9zM7 17H5v-2h2v2zm4 0H9v-2h2v2z"/></svg>
-        <span>Pagos</span>
-      </button>
-      <button class="btn-icon btn-resellers" id="btnResellers" style="display:none">
-        <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-        <span>Vendedores</span>
-      </button>
-      <button class="btn-icon btn-share" id="shareCatalogBtn">
-        <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a2.5 2.5 0 000-1.39l7-4.11A2.99 2.99 0 0018 7.91 3 3 0 1015 5a2.9 2.9 0 00.04.49l-7 4.12a3 3 0 100 4.78l7.05 4.14c-.03.15-.05.31-.05.47a3 3 0 103-2.92z"/></svg>
-        <span>Compartir</span>
-      </button>
+      <div class="tools-menu" id="toolsMenu">
+        <button class="btn-icon btn-orders" id="btnOrders">
+          <svg viewBox="0 0 24 24"><path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg>
+          <span>Pedidos</span>
+          <span class="orders-badge" id="ordersBadge" style="display:none">0</span>
+        </button>
+        <button class="btn-icon btn-orders" id="btnInternal">
+          <svg viewBox="0 0 24 24"><path d="M5 9.2h2.8V19H5V9.2zm5.6-4.2h2.8V19h-2.8V5zm5.6 7h2.8v7h-2.8v-7z"/></svg>
+          <span>Interno</span>
+        </button>
+        <button class="btn-icon btn-payments" id="btnPayments">
+          <svg viewBox="0 0 24 24"><path d="M21 7H3V5h18v2zm0 3H3v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9zM7 17H5v-2h2v2zm4 0H9v-2h2v2z"/></svg>
+          <span>Pagos</span>
+        </button>
+        <button class="btn-icon btn-resellers" id="btnResellers" style="display:none">
+          <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+          <span>Vendedores</span>
+        </button>
+        <button class="btn-icon btn-share" id="shareCatalogBtn">
+          <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a2.5 2.5 0 000-1.39l7-4.11A2.99 2.99 0 0018 7.91 3 3 0 1015 5a2.9 2.9 0 00.04.49l-7 4.12a3 3 0 100 4.78l7.05 4.14c-.03.15-.05.31-.05.47a3 3 0 103-2.92z"/></svg>
+          <span>Compartir</span>
+        </button>
+      </div>
       <button class="btn-icon btn-logout" id="logoutBtn">
         <svg viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
         <span>Salir</span>
@@ -609,6 +673,22 @@
   </div>
 </div>
 
+<!-- UPGRADE MODAL (locked features) -->
+<div class="upgrade-overlay" id="upgradeOverlay">
+  <div class="upgrade-box">
+    <div class="upgrade-icon">ATENCION</div>
+    <h3 id="upgradeTitle">Funcion bloqueada</h3>
+    <p id="upgradeText">Actualiza tu plan para usar esta herramienta.</p>
+    <div class="upgrade-actions">
+      <a class="btn-upgrade-wa" id="upgradeWaBtn" href="#" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.974 2C6.465 2 2 6.465 2 11.974c0 1.87.516 3.622 1.416 5.12L2 22l5.066-1.388A9.929 9.929 0 0011.974 22C17.483 22 22 17.535 22 12.026 22 6.465 17.483 2 11.974 2z"/></svg>
+        Consultar actualizacion por WhatsApp
+      </a>
+      <button class="btn-upgrade-close" id="upgradeCloseBtn" type="button">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
@@ -802,6 +882,12 @@ function initListeners() {
     const newOrders = orders.filter(d => d.status === "pendiente").length;
     $("ordersBadge").textContent = newOrders;
     $("ordersBadge").style.display = newOrders > 0 ? "flex" : "none";
+    // Indicador en icono de herramientas (mobile)
+    const tb = $("toolsBadge");
+    if (tb) {
+      tb.textContent = newOrders > 0 ? String(newOrders) : "!";
+      tb.style.display = newOrders > 0 ? "flex" : "none";
+    }
     renderDashboard();
   });
 }
@@ -833,8 +919,17 @@ function renderPlanBanner() {
   const planNameNorm = normalizePlanName(planData);
   const isPremium = planNameNorm === "premium" || planNameNorm === "enterprise";
 
-$("btnPayments").style.display = paymentsAllowed ? "" : "none";
-  $("btnResellers").style.display = isPremium ? "" : "none";
+  // Mostrar botones siempre (tambien bloqueados) para impulsar upgrade
+  $("btnPayments").style.display = "";
+  $("btnPayments").classList.toggle("locked", !paymentsAllowed);
+  $("btnPayments").setAttribute("aria-disabled", paymentsAllowed ? "false" : "true");
+
+  $("btnResellers").style.display = "";
+  $("btnResellers").classList.toggle("locked", !isPremium);
+  $("btnResellers").setAttribute("aria-disabled", isPremium ? "false" : "true");
+
+  // Si en mobile el menu queda abierto y el boton desaparece por plan, lo cerramos
+  if (!isPremium) document.getElementById("headerActions")?.classList.remove("menu-open");
 
   $("planBadgeName").textContent = plan.name || planData.planName;
 
@@ -1239,8 +1334,43 @@ $("shareCatalogBtn").onclick = () => {
 
 $("btnOrders").onclick = () => { window.location.href = `orders.html?t=${tenantId}`; };
 $("btnInternal").onclick = () => { window.location.href = `internal.html?t=${tenantId}`; };
-$("btnPayments").onclick = () => openPaymentsModal();
-$("btnResellers").onclick = () => { window.location.href = `resellers.html?t=${tenantId}`; };
+$("btnPayments").onclick = () => {
+  if (!canUsePayments(planData)) { openUpgradeModal("links de pago", "Plan Pro o Premium"); return; }
+  openPaymentsModal();
+};
+$("btnResellers").onclick = () => {
+  const name = normalizePlanName(planData);
+  const isPremium = name === "premium" || name === "enterprise";
+  if (!isPremium) { openUpgradeModal("vendedores", "Plan Premium"); return; }
+  window.location.href = `resellers.html?t=${tenantId}`;
+};
+
+// Tools menu (mobile)
+const headerActionsEl = document.getElementById("headerActions");
+const btnTools = document.getElementById("btnTools");
+function closeToolsMenu(){ headerActionsEl?.classList.remove("menu-open"); }
+btnTools && (btnTools.onclick = (e) => {
+  e.stopPropagation();
+  headerActionsEl?.classList.toggle("menu-open");
+});
+document.addEventListener("click", (e) => {
+  if (!headerActionsEl) return;
+  if (!headerActionsEl.classList.contains("menu-open")) return;
+  if (headerActionsEl.contains(e.target)) return;
+  headerActionsEl.classList.remove("menu-open");
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") headerActionsEl?.classList.remove("menu-open");
+});
+// Cerrar al usar acciones del menu (mejora UX mobile)
+["btnOrders","btnInternal","btnPayments","btnResellers","shareCatalogBtn"].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener("click", () => closeToolsMenu());
+});
+
+// Upgrade modal close
+$("upgradeCloseBtn").onclick = closeUpgradeModal;
+$("upgradeOverlay").addEventListener("click", e => { if (e.target === $("upgradeOverlay")) closeUpgradeModal(); });
 
 function formatPaymentMoney(value) {
   const currency = $("cfgCurrency").value.trim() || APP_CONFIG.currencySymbol;
@@ -1360,6 +1490,17 @@ function openPaymentsModal() {
 function closePaymentsModal() {
   $("paymentsModal").classList.remove("open");
 }
+
+function openUpgradeModal(featureLabel, requiredPlanLabel) {
+  const title = `Actualiza tu plan para usar ${featureLabel}`;
+  const current = normalizePlanName(planData);
+  $("upgradeTitle").textContent = title;
+  $("upgradeText").textContent = `Tu plan actual (${current || "trial"}) no incluye esta herramienta. Recomendado: ${requiredPlanLabel}.`;
+  const msg = `Hola! Quiero actualizar mi plan para habilitar ${featureLabel}. Mi tienda: *${tenantId || "-"}*`;
+  $("upgradeWaBtn").href = `https://wa.me/${APP_CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`;
+  $("upgradeOverlay").classList.add("open");
+}
+function closeUpgradeModal() { $("upgradeOverlay").classList.remove("open"); }
 
 function addManualPaymentItem() {
   const productId = $("payProductSelect").value;
