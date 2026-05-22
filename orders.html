@@ -246,7 +246,6 @@ import {
   getAuth, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { firebaseConfig, APP_CONFIG, PLANS } from "./firebase-config.js";
-import { canUsePayments } from "./plan-helpers.js";
 
 const app  = initializeApp(firebaseConfig);
 const db   = getFirestore(app);
@@ -266,6 +265,14 @@ let paymentsAllowed = false;
 const $ = id => document.getElementById(id);
 window.approvePayment = approvePayment;
 window.rejectPayment = rejectPayment;
+
+function normalizePlanName(plan){
+  return String(plan?.planName || "trial").toLowerCase();
+}
+function canUsePayments(plan){
+  const name = normalizePlanName(plan);
+  return name === "pro" || name === "professional" || name === "premium" || name === "enterprise";
+}
 
 /* ── Auth ── */
 onAuthStateChanged(auth, async user => {
