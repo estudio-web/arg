@@ -547,7 +547,6 @@ import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.12.2/fir
 import { getFirestore, collection, onSnapshot, doc, getDoc }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, APP_CONFIG } from "./firebase-config.js";
-import { getProductImages } from "./plan-helpers.js";
 
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
@@ -1146,6 +1145,13 @@ function showToast(msg) {
 /* ── Helpers ── */
 function esc(t = "") { const d = document.createElement("div"); d.textContent = String(t); return d.innerHTML; }
 function placeholder(t = "Producto") { return `https://via.placeholder.com/700x700/f5f5f5/999?text=${encodeURIComponent(t)}`; }
+function getProductImages(product = {}){
+  if(Array.isArray(product.images) && product.images.length){
+    return product.images.filter(Boolean).slice(0,5);
+  }
+  if(product.imageUrl) return [product.imageUrl];
+  return [];
+}
 
 updateCartBadge();
 
