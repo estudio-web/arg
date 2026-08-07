@@ -1778,8 +1778,8 @@ $("saveBtn").onclick = async () => {
 
   const data = {
     title:       $("titleInput").value.trim(),
-    price:       $("priceInput").value.trim(),
-    promoPrice:  $("promoPriceInput").value.trim(),
+    price:       parsePaymentMoney($("priceInput").value),
+    promoPrice:  $("promoPriceInput").value.trim() ? parsePaymentMoney($("promoPriceInput").value) : "",
     discount:    $("discountInput").value ? Number($("discountInput").value) : null,
     stock:       $("stockInput").value !== "" ? Number($("stockInput").value) : null,
     categoryId:  $("catSelect").value || null,
