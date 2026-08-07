@@ -392,7 +392,26 @@
     }
 
     function n(v) {
-      const x = Number(String(v ?? "").replace(",", "."));
+      if (typeof v === "number") return Number.isFinite(v) ? v : 0;
+      let raw = String(v ?? "").replace(/[^\d,.-]/g, "");
+      if (!raw) return 0;
+      const lastComma = raw.lastIndexOf(",");
+      const lastDot = raw.lastIndexOf(".");
+      if (lastComma !== -1 && lastDot !== -1) {
+        // Ambos presentes: el que aparece último es el separador decimal
+        const decimalSep = lastComma > lastDot ? "," : ".";
+        const thousandsSep = decimalSep === "," ? "." : ",";
+        raw = raw.replace(new RegExp("\\" + thousandsSep, "g"), "").replace(decimalSep, ".");
+      } else if (lastComma !== -1) {
+        const parts = raw.split(",");
+        raw = parts.length === 2 && parts[1].length === 3 ? parts.join("") : raw.replace(",", ".");
+      } else if (lastDot !== -1) {
+        // "10.000" (miles) vs "10.5" (decimal): si el grupo final tiene 3 dígitos, es separador de miles
+        const parts = raw.split(".");
+        const isThousands = parts.length > 2 || (parts.length === 2 && parts[1].length === 3);
+        raw = isThousands ? parts.join("") : raw;
+      }
+      const x = Number(raw);
       return Number.isFinite(x) ? x : 0;
     }
 
