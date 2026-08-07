@@ -438,10 +438,6 @@
           <svg viewBox="0 0 24 24"><path d="M21 7H3V5h18v2zm0 3H3v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9zM7 17H5v-2h2v2zm4 0H9v-2h2v2z"/></svg>
           <span>Pagos</span>
         </button>
-        <button class="btn-icon btn-resellers" id="btnResellers" style="display:none">
-          <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-          <span>Vendedores</span>
-        </button>
         <button class="btn-icon btn-share" id="shareCatalogBtn">
           <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a2.5 2.5 0 000-1.39l7-4.11A2.99 2.99 0 0018 7.91 3 3 0 1015 5a2.9 2.9 0 00.04.49l-7 4.12a3 3 0 100 4.78l7.05 4.14c-.03.15-.05.31-.05.47a3 3 0 103-2.92z"/></svg>
           <span>Compartir</span>
@@ -924,13 +920,6 @@ function renderPlanBanner() {
   $("btnPayments").classList.toggle("locked", !paymentsAllowed);
   $("btnPayments").setAttribute("aria-disabled", paymentsAllowed ? "false" : "true");
 
-  $("btnResellers").style.display = "";
-  $("btnResellers").classList.toggle("locked", !isPremium);
-  $("btnResellers").setAttribute("aria-disabled", isPremium ? "false" : "true");
-
-  // Si en mobile el menu queda abierto y el boton desaparece por plan, lo cerramos
-  if (!isPremium) document.getElementById("headerActions")?.classList.remove("menu-open");
-
   $("planBadgeName").textContent = plan.name || planData.planName;
 
   if (ps.suspended) {
@@ -1338,13 +1327,6 @@ $("btnPayments").onclick = () => {
   if (!canUsePayments(planData)) { openUpgradeModal("links de pago", "Plan Pro o Premium"); return; }
   openPaymentsModal();
 };
-$("btnResellers").onclick = () => {
-  const name = normalizePlanName(planData);
-  const isPremium = name === "premium" || name === "enterprise";
-  if (!isPremium) { openUpgradeModal("vendedores", "Plan Premium"); return; }
-  window.location.href = `resellers.html?t=${tenantId}`;
-};
-
 // Tools menu (mobile)
 const headerActionsEl = document.getElementById("headerActions");
 const btnTools = document.getElementById("btnTools");
@@ -1363,7 +1345,7 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") headerActionsEl?.classList.remove("menu-open");
 });
 // Cerrar al usar acciones del menu (mejora UX mobile)
-["btnOrders","btnInternal","btnPayments","btnResellers","shareCatalogBtn"].forEach(id => {
+["btnOrders","btnInternal","btnPayments","shareCatalogBtn"].forEach(id => {
   const el = document.getElementById(id);
   if (el) el.addEventListener("click", () => closeToolsMenu());
 });
