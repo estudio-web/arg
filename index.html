@@ -289,6 +289,12 @@ body{font-family:'Nunito',Arial,sans-serif;background:var(--bg);color:var(--text
 .cart-note label{display:block;font-size:.74rem;font-weight:800;color:var(--sub);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
 .cart-note textarea{width:100%;min-height:68px;resize:vertical;border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-family:inherit;font-size:.88rem;outline:none;background:#fafafa}
 .cart-note textarea:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(52,131,250,.12)}
+.cart-contact{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.cart-contact .cart-field{grid-column:span 1}
+.cart-contact label{display:block;font-size:.74rem;font-weight:800;color:var(--sub);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
+.cart-contact input{width:100%;border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-family:inherit;font-size:.88rem;outline:none;background:#fafafa}
+.cart-contact input:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(52,131,250,.12)}
+.cart-contact input.field-error{border-color:var(--red,#e83030);background:#fff5f5}
 .cart-total{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
 .cart-total-label{font-size:.9rem;font-weight:700;color:var(--sub)}
 .cart-total-val{font-size:1.3rem;font-weight:900}
@@ -488,6 +494,16 @@ body.overlay-open .cta-saas{
     </div>
     <div class="cart-items" id="cartItems"></div>
     <div class="cart-footer">
+      <div class="cart-contact">
+        <div class="cart-field">
+          <label for="cartNombre">Nombre y apellido</label>
+          <input id="cartNombre" type="text" placeholder="Ej: Juan Pérez" autocomplete="name">
+        </div>
+        <div class="cart-field">
+          <label for="cartWhatsapp">WhatsApp</label>
+          <input id="cartWhatsapp" type="tel" placeholder="Ej: 2646706973" autocomplete="tel" inputmode="numeric">
+        </div>
+      </div>
       <div class="cart-note">
         <label for="cartNote">Aclaración del pedido</label>
         <textarea id="cartNote" placeholder="Ej: talle, color, horario de entrega o alguna indicación útil"></textarea>
@@ -1066,11 +1082,41 @@ document.getElementById("btnCart").onclick    = () => { renderCart(); document.g
   const btnContinue = document.getElementById("btnContinue");
   if (btnContinue) btnContinue.onclick = closeCart;
 
+/* ── Datos de contacto del cliente (persisten entre visitas) ── */
+function normalizeWhatsapp(value) {
+  return String(value || "").replace(/\D/g, "");
+}
+
+function prefillContactFields() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("customer_contact") || "{}");
+    if (saved.nombre) document.getElementById("cartNombre").value = saved.nombre;
+    if (saved.whatsapp) document.getElementById("cartWhatsapp").value = saved.whatsapp;
+  } catch (e) {}
+}
+prefillContactFields();
+["cartNombre","cartWhatsapp"].forEach(id => {
+  document.getElementById(id).addEventListener("input", e => e.target.classList.remove("field-error"));
+});
+
 /* ── Order via WhatsApp ── */
 document.getElementById("btnOrderWA").onclick = () => {
   if (!cart.length) { showToast("Tu carrito está vacío"); return; }
+
+  const nombreEl = document.getElementById("cartNombre");
+  const waEl = document.getElementById("cartWhatsapp");
+  const nombre = nombreEl.value.trim();
+  const whatsapp = normalizeWhatsapp(waEl.value);
+
+  nombreEl.classList.toggle("field-error", !nombre);
+  waEl.classList.toggle("field-error", !whatsapp);
+  if (!nombre || !whatsapp) {
+    showToast("Completá tu nombre y WhatsApp para poder confirmarte el pedido");
+    return;
+  }
+
   const note = document.getElementById("cartNote").value.trim();
-  let msg = "Hola! Quiero hacer el siguiente pedido:\n\n";
+  let msg = `Hola! Quiero hacer el siguiente pedido:\n\n`;
   let total = 0;
   cart.forEach(i => {
     const sub = i.price * i.qty;
@@ -1078,15 +1124,19 @@ document.getElementById("btnOrderWA").onclick = () => {
     msg += `• ${i.title} x${i.qty} = ${money(sub)}\n`;
   });
   if (note) msg += `\nAclaracion: ${note}\n`;
-  msg += `\n*Total: ${money(total)}*`;
+  msg += `\n*Total: ${money(total)}*\n\n`;
+  msg += `Nombre: ${nombre}\nWhatsApp: ${whatsapp}`;
   const wa = tenantConfig.whatsappNumber || APP_CONFIG.whatsappNumber;
   window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, "_blank");
 
+  // Guardamos los datos de contacto para no pedirlos de nuevo la próxima vez
+  try { localStorage.setItem("customer_contact", JSON.stringify({ nombre, whatsapp })); } catch (e) {}
+
   // Save order to Firestore
-  saveOrder(total, note);
+  saveOrder(total, note, nombre, whatsapp);
 };
 
-async function saveOrder(total, note = "") {
+async function saveOrder(total, note = "", nombre = "", whatsapp = "") {
   try {
     const { getFirestore, collection, addDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
     const fdb = getFirestore();
@@ -1114,6 +1164,9 @@ async function saveOrder(total, note = "") {
       items: cart.map(i => ({ ...i })),
       total,
       note,
+      nombre,
+      whatsapp,
+      whatsappNumber: whatsapp,
       status: "pendiente",
       createdAt: serverTimestamp(),
       ...resellerPayload
