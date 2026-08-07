@@ -324,7 +324,10 @@ onAuthStateChanged(auth, async user => {
       tenantId = snap.exists() ? snap.data().tenantId : user.uid;
     } catch { tenantId = user.uid; }
   }
-  loadTenantConfig();
+  // Esperamos a que el plan esté resuelto ANTES de dibujar los pedidos,
+  // para que "Ver comprobante" y demás no queden bloqueados por una carrera
+  // entre la carga del plan y la llegada de los pedidos.
+  await loadTenantConfig();
   startListener();
 });
 
@@ -339,8 +342,12 @@ async function loadTenantConfig() {
     paymentsAllowed = canUsePayments(planData);
     if (planSnap.exists() && planSnap.data().status === "suspended") {
       document.querySelector("main").innerHTML = `<div style="text-align:center;padding:60px 16px;color:#666"><div style="font-size:2.5rem">⛔</div><h2 style="margin:10px 0 6px">Cuenta suspendida</h2><p>Contactá al soporte para renovar tu plan.</p></div>`;
+      return;
     }
   } catch {}
+  // Red de seguridad: si por algún motivo ya se habían dibujado pedidos
+  // con el estado de plan viejo, los volvemos a dibujar con el correcto.
+  if (allOrders.length) render();
 }
 
 /* ── Back ── */
@@ -486,15 +493,39 @@ function render() {
       showToast("Estado actualizado ✓");
     };
 
-    // WhatsApp confirm
-    card.querySelector(".btn-wa-order").onclick = () => {
-      const wa  = tenantConfig.whatsappNumber || APP_CONFIG.whatsappNumber;
-      let msg   = `Confirmación de pedido #${order.id.slice(-6).toUpperCase()}\n\n`;
+    // WhatsApp confirm → responde directo al cliente (emisor del pedido) con el link de pago
+    card.querySelector(".btn-wa-order").onclick = async () => {
+      let customerWa = getOrderCustomerWa(order);
+      if (!customerWa) {
+        const entered = prompt("Este pedido no tiene un WhatsApp cargado. Ingresá el número del cliente para poder confirmarle (con código de país, sin +):");
+        customerWa = normalizeDigits(entered);
+        if (!customerWa) { showToast("Falta el WhatsApp del cliente"); return; }
+        // Lo guardamos en el pedido para no tener que pedirlo de nuevo
+        await updateDoc(doc(db, `tenants/${tenantId}/orders`, order.id), { whatsapp: customerWa, whatsappNumber: customerWa });
+      }
+
+      const customerName = getOrderCustomerName(order);
+      let msg = `Hola${customerName ? " " + customerName : ""}! Te confirmo tu pedido #${order.id.slice(-6).toUpperCase()}:\n\n`;
       (order.items || []).forEach(i => {
         msg += `• ${i.title} x${i.qty} = ${currency}${((i.price || 0) * i.qty).toLocaleString()}\n`;
       });
-      msg += `\n*Total: ${currency}${(order.total || 0).toLocaleString()}*\n\n¿Podés confirmarme tu pedido?`;
-      window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, "_blank");
+      msg += `\n*Total: ${currency}${(order.total || 0).toLocaleString()}*\n`;
+
+      if (paymentsAllowed) {
+        const link = buildPaymentLink(order, order.total || 0);
+        msg += `\nPara confirmar y coordinar la entrega, realizá el pago acá:\n${link}\n\nCuando pagues, subí el comprobante desde esa misma página.`;
+      } else {
+        msg += `\n¿Podés confirmarme el pedido? En breve te paso los datos para el pago.`;
+      }
+
+      window.open(`https://wa.me/${customerWa}?text=${encodeURIComponent(msg)}`, "_blank");
+
+      // Marcamos el pedido como confirmado automáticamente
+      await updateDoc(doc(db, `tenants/${tenantId}/orders`, order.id), {
+        status: "confirmado",
+        updatedAt: serverTimestamp()
+      });
+      showToast("Pedido confirmado y mensaje enviado al cliente ✓");
     };
 
     const payBtn = card.querySelector(".btn-pay-order");
@@ -619,6 +650,10 @@ function renderPaymentDetails(order, currency) {
       </div>
     </div>
   `;
+}
+
+function normalizeDigits(value) {
+  return String(value || "").replace(/\D/g, "");
 }
 
 function getOrderCustomerWa(order) {
