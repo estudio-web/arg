@@ -786,9 +786,9 @@ function renderDashboard() {
       <div class="dashboard-sub">${orders.length} pedidos totales</div>
     </div>
     <div class="dashboard-card">
-      <h3>Pagos</h3>
+      <h3>Pagos por revisar</h3>
       <div class="dashboard-val">${reviewCount}</div>
-      <div class="dashboard-sub">${paidOrders.length} con comprobante recibido</div>
+      <div class="dashboard-sub">${paidOrders.length} comprobantes recibidos en total</div>
     </div>
     <div class="dashboard-card">
       <h3>Ticket promedio</h3>
@@ -1837,4 +1837,3 @@ function showToast(msg) { const t = $("toast"); t.textContent = msg; t.classList
 
 </body>
 </html>
-
